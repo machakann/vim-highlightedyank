@@ -173,7 +173,7 @@ function! s:highlight_cancel(id) abort  "{{{
   if filter(bufnrlist, 'v:val == currentbuf') != []
     let curpos = getpos('.')
     for highlight in highlightlist
-      if s:is_equal_or_ahead(highlight.region.head, curpos)
+      if s:is_equal_or_ahead(highlight.region.tail, curpos)
         call highlightedyank#highlight#cancel(a:id)
         execute 'augroup highlightedyank-highlight-cancel-' . a:id
           autocmd!
