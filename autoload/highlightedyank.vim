@@ -79,6 +79,7 @@ function! s:yank_visual(register) abort "{{{
 
     let options = s:shift_options()
     try
+      let input = ''
       let highlight = highlightedyank#highlight#new()
       call highlight.order(region, motionwise)
       if s:has_timers
@@ -89,7 +90,7 @@ function! s:yank_visual(register) abort "{{{
     finally
       call s:restore_options(options)
     endtry
-    let keyseq = printf('%sgv%s', a:register, "\<Plug>(highlightedyank-y)")
+    let keyseq = printf('%sgv%s%s', a:register, "\<Plug>(highlightedyank-y)", input)
     call feedkeys(keyseq, 'it')
   endif
 endfunction
