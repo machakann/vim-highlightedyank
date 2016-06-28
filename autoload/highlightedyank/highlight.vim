@@ -272,7 +272,6 @@ function! s:highlight_order_blockwise(region) abort "{{{
       let tail = getpos('.')
       let col = head[2]
       let len = tail[2] - head[2] + 1
-      PP! [head, tail, len, vcol_head, vcol_tail]
       let order += [[lnum, col, len]]
 
       if n == 7
