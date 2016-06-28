@@ -163,9 +163,40 @@ function! s:operator_get_region(motionwise) abort "{{{
 endfunction
 "}}}
 function! s:blink(highlight, hi_group, duration) abort "{{{
+  if a:duration != 0 && a:highlight.show(a:hi_group)
+    redraw
+    if a:duration > 0
+      let c = s:wait_for_input(a:highlight, a:duration)
+    else
+      " highlight off: limit the number of highlighting region to one explicitly
+      call highlightedyank#highlight#cancel()
+
+      let id = a:highlight.persist()
+      call s:cancel_if_edited(id)
+      let c = ''
+    endif
+  endif
+  return c
+endfunction
+"}}}
+function! s:glow(highlight, hi_group, duration) abort "{{{
+  if a:duration != 0 && a:highlight.show(a:hi_group)
+    " highlight off: limit the number of highlighting region to one explicitly
+    call highlightedyank#highlight#cancel()
+
+    if a:duration > 0
+      let id = a:highlight.scheduled_quench(a:duration)
+      call timer_start(a:duration, s:SID . 'flash_echo')
+      call s:cancel_if_edited(id)
+    else
+      let id = a:highlight.persist()
+      call s:cancel_if_edited(id)
+    endif
+  endif
+endfunction
+"}}}
+function! s:wait_for_input(highlight, duration) abort  "{{{
   let clock = highlightedyank#clock#new()
-  call a:highlight.show(a:hi_group)
-  redraw
   try
     let c = 0
     call clock.start()
@@ -180,34 +211,32 @@ function! s:blink(highlight, hi_group, duration) abort "{{{
     call a:highlight.quench()
     call clock.stop()
   endtry
-  if c != 0
+
+  if c == 0
+    let c = ''
+  else
     let c = type(c) == s:type_num ? nr2char(c) : c
   endif
+
   return c
 endfunction
 "}}}
-function! s:glow(highlight, hi_group, duration) abort "{{{
-  if a:highlight.show(a:hi_group)
-    " highlight off: limit the number of highlighting region to one explicitly
-    call highlightedyank#highlight#cancel()
-
-    let id = a:highlight.scheduled_quench(a:duration)
-    call timer_start(a:duration, s:SID . 'flash_echo')
-    execute 'augroup highlightedyank-highlight-cancel-' . id
-      autocmd!
-      execute printf('autocmd TextChanged,InsertEnter <buffer> call %shighlight_cancel(%s)', s:SID, id)
-    augroup END
-  endif
+function! s:cancel_if_edited(id) abort "{{{
+  execute 'augroup highlightedyank-highlight-cancel-' . a:id
+    autocmd!
+    execute printf('autocmd TextChanged <buffer> call %scancel_highlight(%s, "TextChanged")', s:SID, a:id)
+    execute printf('autocmd InsertEnter <buffer> call %scancel_highlight(%s, "InsertEnter")', s:SID, a:id)
+  augroup END
 endfunction
 "}}}
-function! s:highlight_cancel(id) abort  "{{{
+function! s:cancel_highlight(id, event) abort  "{{{
   let highlightlist = highlightedyank#highlight#get(a:id)
   let bufnrlist = map(deepcopy(highlightlist), 'v:val.bufnr')
   let currentbuf = bufnr('%')
   if filter(bufnrlist, 'v:val == currentbuf') != []
-    let curpos = getpos('.')
+    let pos = a:event ==# 'TextChanged' ? getpos("'[") : getpos('.')
     for highlight in highlightlist
-      if s:is_equal_or_ahead(highlight.region.tail, curpos)
+      if s:is_equal_or_ahead(highlight.region.tail, pos)
         call highlightedyank#highlight#cancel(a:id)
         execute 'augroup highlightedyank-highlight-cancel-' . a:id
           autocmd!

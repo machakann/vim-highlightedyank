@@ -34,6 +34,14 @@ INTRODUCTION				*highlightedyank-introduction*
 >
 	let g:highlightedyank_highlight_duration = 1000
 <
+負数が与えられるとハイライトは時間によって消えなくなります。
+>
+	let g:highlightedyank_highlight_duration = -1
+<
+ただしいずれの場合も、ハイライト位置がずれるのを防ぐためにより前方が編集された
+場合はハイライトが消去されます。また、新しい位置がヤンクされると古い位置のハイ
+ライトは消えます。
+
 ==============================================================================
 HIGHLIGHT GROUPS			*highlightedyank-highlight-groups*
 

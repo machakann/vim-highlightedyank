@@ -138,6 +138,16 @@ function! s:highlight.scheduled_quench(time, ...) dict abort  "{{{
   return id
 endfunction
 "}}}
+function! s:highlight.persist(...) dict abort  "{{{
+  let id = a:0 > 0 ? a:1 : s:get_pid()
+
+  if !has_key(s:quench_table, id)
+    let s:quench_table[id] = []
+  endif
+  let s:quench_table[id] += [self]
+  return id
+endfunction
+"}}}
 
 " for scheduled-quench "{{{
 let s:quench_table = {}
@@ -167,7 +177,9 @@ function! highlightedyank#highlight#cancel(...) abort "{{{
 
   for id in id_list
     call s:scheduled_quench(id)
-    call timer_stop(id)
+    if id >= 0
+      call timer_stop(id)
+    endif
   endfor
 endfunction
 "}}}
@@ -197,6 +209,18 @@ function! s:exodus_from_cmdwindow() abort "{{{
     autocmd!
     autocmd CursorMoved * call s:quench_queued()
   augroup END
+endfunction
+"}}}
+
+" ID for persistent highlights
+let s:pid = 0
+function! s:get_pid() abort "{{{
+  if s:pid != -1/0
+    let s:pid -= 1
+  else
+    let s:pid = -1
+  endif
+  return s:pid
 endfunction
 "}}}
 "}}}
