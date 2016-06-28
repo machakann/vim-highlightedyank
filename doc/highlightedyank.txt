@@ -1,5 +1,5 @@
 *highlightedyank.txt*	Make the yanked region apparent!
-						Last change:26-Jun-2016.
+						Last change:28-Jun-2016.
 
 Author  : machakann <mckn{at}outlook.jp>
 License : NYSL license
@@ -24,8 +24,7 @@ INTRODUCTION				*highlightedyank-introduction*
 That is a pretty trick to make your coding better. Add the lines into your
 vimrc.
 >
-	nmap y <Plug>(highlightedyank)
-	omap y <Plug>(highlightedyank)
+	map y <Plug>(highlightedyank)
 <
 
 The highlight duration can be optimized by

@@ -1,5 +1,5 @@
 *highlightedyank.txt*	ヤンクした場所をわかりやすくする。
-						Last change:26-Jun-2016.
+						Last change:28-Jun-2016.
 
 書いた人   : machakann <mckn{at}outlook.jp>
 ライセンス : NYSL ライセンス
@@ -24,8 +24,7 @@ INTRODUCTION				*highlightedyank-introduction*
 ンです。あなたのコーディング作業にほんの少しの彩りを加えます。次の行を vimrc
 に書き加えると使えます。
 >
-	nmap y <Plug>(highlightedyank)
-	omap y <Plug>(highlightedyank)
+	map y <Plug>(highlightedyank)
 <
 
 ハイライトの持続時間は次の変数を通して変更できます。

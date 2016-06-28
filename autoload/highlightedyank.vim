@@ -25,12 +25,20 @@ delfunction s:SID
 let s:working = 0
 "}}}
 
-function! highlightedyank#yank() abort  "{{{
+function! highlightedyank#yank(mode) abort  "{{{
   let l:count = v:count ? v:count : ''
   let register = v:register ==# '' ? '' : '"' . v:register
+  if a:mode ==# 'n'
+    call s:yank_normal(l:count, register)
+  elseif a:mode ==# 'x'
+    call s:yank_visual(register)
+  endif
+endfunction
+"}}}
+function! s:yank_normal(count, register) abort "{{{
   let view = winsaveview()
   let s:working = 1
-  let [input, region, motionwise] = s:query(l:count)
+  let [input, region, motionwise] = s:query(a:count)
   let s:working = 0
   if motionwise !=# ''
     let s:input = input
@@ -50,13 +58,39 @@ function! highlightedyank#yank() abort  "{{{
       call s:restore_options(options)
       call winrestview(view)
     endtry
-    let keyseq = printf('%s%s%s%s', register, l:count, "\<Plug>(highlightedyank-y)", input)
+    let keyseq = printf('%s%s%s%s', a:register, a:count, "\<Plug>(highlightedyank-y)", input)
     call feedkeys(keyseq, 'it')
     let keyseq = printf(':call %safter_echo()%s', s:SID, "\<CR>")
     call feedkeys(keyseq, 'in')
   else
     call feedkeys(":echo ''\<CR>", 'in')
     call winrestview(view)
+  endif
+endfunction
+"}}}
+function! s:yank_visual(register) abort "{{{
+  let region = {}
+  let region.head = getpos("'<")
+  let region.tail = getpos("'>")
+  if s:is_equal_or_ahead(region.tail, region.head)
+    let motionwise = visualmode()
+    let hi_group = 'HighlightedyankRegion'
+    let hi_duration = s:get('highlight_duration', 1000)
+
+    let options = s:shift_options()
+    try
+      let highlight = highlightedyank#highlight#new()
+      call highlight.order(region, motionwise)
+      if s:has_timers
+        call s:glow(highlight, hi_group, hi_duration)
+      else
+        let input .= s:blink(highlight, hi_group, hi_duration)
+      endif
+    finally
+      call s:restore_options(options)
+    endtry
+    let keyseq = printf('%sgv%s', a:register, "\<Plug>(highlightedyank-y)")
+    call feedkeys(keyseq, 'it')
   endif
 endfunction
 "}}}

@@ -46,12 +46,14 @@ let s:highlight = {
       \ }
 "}}}
 function! s:highlight.order(region, motionwise) dict abort  "{{{
-  if a:motionwise ==# 'char'
+  if a:motionwise ==# 'char' || a:motionwise ==# 'v'
     let order_list = s:highlight_order_charwise(a:region)
-  elseif a:motionwise ==# 'line'
+  elseif a:motionwise ==# 'line' || a:motionwise ==# 'V'
     let order_list = s:highlight_order_linewise(a:region)
-  elseif a:motionwise ==# 'block'
+  elseif a:motionwise ==# 'block' || a:motionwise ==# "\<C-v>"
     let order_list = s:highlight_order_blockwise(a:region)
+  else
+    return
   endif
   let self.order_list += order_list
   let self.region = deepcopy(a:region)
