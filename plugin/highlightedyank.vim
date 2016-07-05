@@ -1,5 +1,5 @@
 " highlighted-yank: Make the yanked region apparent!
-" Last Change: 28-Jun-2016.
+" Last Change: 05-Jul-2016.
 " Maintainer : Masaaki Nakamura <mckn@outlook.com>
 
 " License    : NYSL
@@ -24,4 +24,5 @@ call s:default_highlight()
 " intrinsic keymappings
 noremap <Plug>(highlightedyank-y) y
 noremap <Plug>(highlightedyank-g@) g@
+noremap <Plug>(highlightedyank-doublequote) "
 

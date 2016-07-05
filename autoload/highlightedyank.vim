@@ -27,7 +27,7 @@ let s:working = 0
 
 function! highlightedyank#yank(mode) abort  "{{{
   let l:count = v:count ? v:count : ''
-  let register = v:register ==# '' ? '' : '"' . v:register
+  let register = v:register ==# '' ? '' : "\<Plug>(highlightedyank-doublequote)" . v:register
   if a:mode ==# 'n'
     call s:yank_normal(l:count, register)
   elseif a:mode ==# 'x'
