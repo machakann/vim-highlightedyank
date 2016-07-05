@@ -133,11 +133,20 @@ function! s:get_region(curpos, count, input) abort  "{{{
   call setpos('.', a:curpos)
   try
     execute printf("normal %s\<Plug>(highlightedyank-g@)%s", a:count, a:input)
+  catch
+    let verbose = get(g:, 'highlightedyank#verbose', 0)
+    echohl ErrorMsg
+    if verbose >= 2
+      echomsg printf('highlightedyank: Motion error. [%s] %s', a:input, v:exception)
+    elseif verbose == 1
+      echomsg 'highlightedyank: Motion error.'
+    endif
+    echohl NONE
   finally
     onoremap <Plug>(highlightedyank) y
     let &operatorfunc = opfunc
+    return [s:region, s:motionwise]
   endtry
-  return [s:region, s:motionwise]
 endfunction
 "}}}
 function! s:modify_region(region) abort "{{{
