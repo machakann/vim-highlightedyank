@@ -27,12 +27,23 @@ let s:working = 0
 
 function! highlightedyank#yank(mode) abort  "{{{
   let l:count = v:count ? v:count : ''
-  let register = v:register ==# '' ? '' : "\<Plug>(highlightedyank-doublequote)" . v:register
+  let register = v:register ==# s:default_register() ? '' : "\<Plug>(highlightedyank-doublequote)" . v:register
   if a:mode ==# 'n'
     call s:yank_normal(l:count, register)
   elseif a:mode ==# 'x'
     call s:yank_visual(register)
   endif
+endfunction
+"}}}
+function! s:default_register() abort  "{{{
+  if &clipboard =~# 'unnamedplus'
+    let default_register = '+'
+  elseif &clipboard =~# 'unnamed'
+    let default_register = '*'
+  else
+    let default_register = '"'
+  endif
+  return default_register
 endfunction
 "}}}
 function! s:yank_normal(count, register) abort "{{{
