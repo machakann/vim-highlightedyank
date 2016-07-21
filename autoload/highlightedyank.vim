@@ -294,7 +294,6 @@ function! s:flash_echo(...) abort  "{{{
 endfunction
 "}}}
 function! s:echo(messages) abort  "{{{
-  echo ''
   redraw
   for [mes, hi_group] in a:messages
     execute 'echohl ' . hi_group
