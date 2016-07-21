@@ -12,7 +12,6 @@ let s:type_num  = type(0)
 
 " features
 let s:has_gui_running = has('gui_running')
-let s:has_timers = has('timers')
 
 " SID
 function! s:SID() abort
@@ -24,6 +23,7 @@ delfunction s:SID
 " state
 let s:working = 0
 let s:flash_echo_id = 0
+let s:highlight_func = has('timers') ? 's:glow' : 's:blink'
 "}}}
 
 function! highlightedyank#yank(mode) abort  "{{{
@@ -53,6 +53,7 @@ function! s:yank_normal(count, register) abort "{{{
   let [input, region, motionwise] = s:query(a:count)
   let s:working = 0
   if motionwise !=# ''
+    let keyseq = printf('%s%s%s%s', a:register, a:count, "\<Plug>(highlightedyank-y)", input)
     let s:input = input
     let hi_group = 'HighlightedyankRegion'
     let hi_duration = s:get('highlight_duration', 1000)
@@ -61,19 +62,16 @@ function! s:yank_normal(count, register) abort "{{{
     try
       let highlight = highlightedyank#highlight#new()
       call highlight.order(region, motionwise)
-      if s:has_timers
-        call s:glow(highlight, hi_group, hi_duration)
-      else
-        let input .= s:blink(highlight, hi_group, hi_duration)
+      if hi_duration < 0
+        let keyseq .= s:persist(highlight, hi_group)
+      elseif hi_duration > 0
+        let keyseq .= {s:highlight_func}(highlight, hi_group, hi_duration)
       endif
     finally
       call s:restore_options(options)
       call winrestview(view)
     endtry
-    let keyseq = printf('%s%s%s%s', a:register, a:count, "\<Plug>(highlightedyank-y)", input)
     call feedkeys(keyseq, 'it')
-    let keyseq = printf(':call %safter_echo()%s', s:SID, "\<CR>")
-    call feedkeys(keyseq, 'in')
   else
     call feedkeys(":echo ''\<CR>", 'in')
     call winrestview(view)
@@ -85,24 +83,23 @@ function! s:yank_visual(register) abort "{{{
   let region.head = getpos("'<")
   let region.tail = getpos("'>")
   if s:is_equal_or_ahead(region.tail, region.head)
+    let keyseq = printf('%sgv%s', a:register, "\<Plug>(highlightedyank-y)")
     let motionwise = visualmode()
     let hi_group = 'HighlightedyankRegion'
     let hi_duration = s:get('highlight_duration', 1000)
 
     let options = s:shift_options()
     try
-      let input = ''
       let highlight = highlightedyank#highlight#new()
       call highlight.order(region, motionwise)
-      if s:has_timers
-        call s:glow(highlight, hi_group, hi_duration)
-      else
-        let input .= s:blink(highlight, hi_group, hi_duration)
+      if hi_duration < 0
+        let keyseq .= s:persist(highlight, hi_group)
+      elseif hi_duration > 0
+        let keyseq .= {s:highlight_func}(highlight, hi_group, hi_duration)
       endif
     finally
       call s:restore_options(options)
     endtry
-    let keyseq = printf('%sgv%s%s', a:register, "\<Plug>(highlightedyank-y)", input)
     call feedkeys(keyseq, 'it')
   endif
 endfunction
@@ -127,11 +124,11 @@ function! s:query(count) abort "{{{
 
     let input .= c
     let [region, motionwise] = s:get_region(curpos, a:count, input)
+    call s:input_echo(input)
     if motionwise !=# ''
       call s:modify_region(region)
       break
     endif
-    call s:input_echo(input)
   endwhile
   return [input, region, motionwise]
 endfunction
@@ -184,40 +181,39 @@ function! s:operator_get_region(motionwise) abort "{{{
   let s:motionwise = a:motionwise
 endfunction
 "}}}
-function! s:blink(highlight, hi_group, duration) abort "{{{
-  if a:duration != 0 && a:highlight.show(a:hi_group)
-    redraw
-    if a:duration > 0
-      let c = s:wait_for_input(a:highlight, a:duration)
-    else
-      " highlight off: limit the number of highlighting region to one explicitly
-      call highlightedyank#highlight#cancel()
-
-      let id = a:highlight.persist()
-      call s:cancel_if_edited(id)
-      let c = ''
-    endif
-  endif
-  return c
-endfunction
-"}}}
-function! s:glow(highlight, hi_group, duration) abort "{{{
-  if a:duration != 0 && a:highlight.show(a:hi_group)
+function! s:persist(highlight, hi_group) abort  "{{{
+  if a:highlight.show(a:hi_group)
     " highlight off: limit the number of highlighting region to one explicitly
     call highlightedyank#highlight#cancel()
 
-    if a:duration > 0
-      let id = a:highlight.scheduled_quench(a:duration)
-      if s:flash_echo_id > 0
-        call timer_stop(s:flash_echo_id)
-      endif
-      let s:flash_echo_id = timer_start(a:duration, s:SID . 'flash_echo')
-      call s:cancel_if_edited(id)
-    else
-      let id = a:highlight.persist()
-      call s:cancel_if_edited(id)
-    endif
+    let id = a:highlight.persist()
+    call s:cancel_if_edited(id)
   endif
+  return ''
+endfunction
+"}}}
+function! s:blink(highlight, hi_group, duration) abort "{{{
+  let key = ''
+  if a:highlight.show(a:hi_group)
+    redraw
+    let key = s:wait_for_input(a:highlight, a:duration)
+  endif
+  return key
+endfunction
+"}}}
+function! s:glow(highlight, hi_group, duration) abort "{{{
+  if a:highlight.show(a:hi_group)
+    " highlight off: limit the number of highlighting region to one explicitly
+    call highlightedyank#highlight#cancel()
+
+    let id = a:highlight.scheduled_quench(a:duration)
+    if s:flash_echo_id > 0
+      call timer_stop(s:flash_echo_id)
+    endif
+    let s:flash_echo_id = timer_start(a:duration, s:SID . 'flash_echo')
+    call s:cancel_if_edited(id)
+  endif
+  return ''
 endfunction
 "}}}
 function! s:wait_for_input(highlight, duration) abort  "{{{
