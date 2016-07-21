@@ -23,6 +23,7 @@ delfunction s:SID
 
 " state
 let s:working = 0
+let s:flash_echo_id = 0
 "}}}
 
 function! highlightedyank#yank(mode) abort  "{{{
@@ -207,7 +208,10 @@ function! s:glow(highlight, hi_group, duration) abort "{{{
 
     if a:duration > 0
       let id = a:highlight.scheduled_quench(a:duration)
-      call timer_start(a:duration, s:SID . 'flash_echo')
+      if s:flash_echo_id > 0
+        call timer_stop(s:flash_echo_id)
+      endif
+      let s:flash_echo_id = timer_start(a:duration, s:SID . 'flash_echo')
       call s:cancel_if_edited(id)
     else
       let id = a:highlight.persist()
@@ -289,6 +293,7 @@ function! s:flash_echo(...) abort  "{{{
   if !s:working
     echo ''
     redraw
+    let s:flash_echo_id = 0
   endif
 endfunction
 "}}}
