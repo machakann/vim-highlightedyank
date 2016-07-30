@@ -255,9 +255,8 @@ function! s:cancel_highlight(id, event) abort  "{{{
   let bufnrlist = map(deepcopy(highlightlist), 'v:val.bufnr')
   let currentbuf = bufnr('%')
   if filter(bufnrlist, 'v:val == currentbuf') != []
-    let pos = a:event ==# 'TextChanged' ? getpos("'[") : getpos('.')
     for highlight in highlightlist
-      if s:is_equal_or_ahead(highlight.region.tail, pos)
+      if s:highlight_off_by_{a:event}(highlight)
         call highlightedyank#highlight#cancel(a:id)
         execute 'augroup highlightedyank-highlight-cancel-' . a:id
           autocmd!
@@ -266,6 +265,14 @@ function! s:cancel_highlight(id, event) abort  "{{{
       endif
     endfor
   endif
+endfunction
+"}}}
+function! s:highlight_off_by_InsertEnter(highlight) abort  "{{{
+  return 1
+endfunction
+"}}}
+function! s:highlight_off_by_TextChanged(highlight) abort  "{{{
+  return !a:highlight.is_text_identical()
 endfunction
 "}}}
 function! s:after_echo() abort  "{{{
