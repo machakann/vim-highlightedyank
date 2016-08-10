@@ -1,5 +1,5 @@
 " highlighted-yank: Make the yanked region apparent!
-" Last Change: 05-Jul-2016.
+" Last Change: 10-Aug-2016.
 " Maintainer : Masaaki Nakamura <mckn@outlook.com>
 
 " License    : NYSL
@@ -12,7 +12,7 @@ endif
 let g:loaded_highlightedyank = 1
 
 nnoremap <silent> <Plug>(highlightedyank) :<C-u>call highlightedyank#yank('n')<CR>
-xnoremap          <Plug>(highlightedyank) :<C-u>call highlightedyank#yank('x')<CR>
+xnoremap <silent> <Plug>(highlightedyank) :<C-u>call highlightedyank#yank('x')<CR>
 onoremap          <Plug>(highlightedyank) y
 
 " highlight group
