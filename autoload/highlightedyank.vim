@@ -258,9 +258,6 @@ function! s:cancel_highlight(id, event) abort  "{{{
     for highlight in highlightlist
       if s:highlight_off_by_{a:event}(highlight)
         call highlightedyank#highlight#cancel(a:id)
-        execute 'augroup highlightedyank-highlight-cancel-' . a:id
-          autocmd!
-        augroup END
         break
       endif
     endfor

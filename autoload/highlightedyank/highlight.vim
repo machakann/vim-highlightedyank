@@ -162,7 +162,7 @@ function! s:scheduled_quench(id) abort  "{{{
     execute 'augroup highlightedyank-highlight-cancel-' . a:id
       autocmd!
     augroup END
-    execute 'augroup! highlightedyank-highlight-cancel-' . a:id
+    execute 'silent augroup! highlightedyank-highlight-cancel-' . a:id
     unlet s:quench_table[a:id]
   finally
     call s:restore_options(options)
