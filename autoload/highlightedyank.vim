@@ -83,7 +83,7 @@ function! s:yank_visual(register) abort "{{{
   let region.head = getpos("'<")
   let region.tail = getpos("'>")
   if s:is_equal_or_ahead(region.tail, region.head)
-    let keyseq = printf('%sgv%s', a:register, "\<Plug>(highlightedyank-y)")
+    let keyseq = printf('gv%s%s', a:register, "\<Plug>(highlightedyank-y)")
     let motionwise = visualmode()
     let hi_group = 'HighlightedyankRegion'
     let hi_duration = s:get('highlight_duration', 1000)
