@@ -287,6 +287,7 @@ function! s:input_echo(...) abort  "{{{
     let messages += [[a:1, 'Special']]
   endif
   call s:echo(messages)
+  redraw
 endfunction
 "}}}
 function! s:flash_echo(...) abort  "{{{
@@ -298,7 +299,6 @@ function! s:flash_echo(...) abort  "{{{
 endfunction
 "}}}
 function! s:echo(messages) abort  "{{{
-  redraw
   for [mes, hi_group] in a:messages
     execute 'echohl ' . hi_group
     echon mes
