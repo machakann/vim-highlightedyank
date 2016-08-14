@@ -287,13 +287,11 @@ function! s:input_echo(...) abort  "{{{
     let messages += [[a:1, 'Special']]
   endif
   call s:echo(messages)
-  redraw
 endfunction
 "}}}
 function! s:flash_echo(...) abort  "{{{
   if !s:working
     echo ''
-    redraw
     let s:flash_echo_id = 0
   endif
 endfunction
