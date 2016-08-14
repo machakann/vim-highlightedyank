@@ -152,17 +152,15 @@ endfunction
 
 " for scheduled-quench "{{{
 let s:quench_table = {}
+let s:obsolete_augroup = []
 function! s:scheduled_quench(id) abort  "{{{
   let options = s:shift_options()
   try
     for highlight in s:quench_table[a:id]
       call highlight.quench()
     endfor
-    execute 'augroup highlightedyank-highlight-cancel-' . a:id
-      autocmd!
-    augroup END
-    execute 'silent augroup! highlightedyank-highlight-cancel-' . a:id
     unlet s:quench_table[a:id]
+    call s:metabolize_augroup(a:id)
   finally
     call s:restore_options(options)
     redraw
@@ -186,6 +184,23 @@ endfunction
 "}}}
 function! highlightedyank#highlight#get(id) abort "{{{
   return get(s:quench_table, a:id, [])
+endfunction
+"}}}
+function! s:metabolize_augroup(id) abort  "{{{
+  " clean up autocommands in the current augroup
+  execute 'augroup highlightedyank-highlight-cancel-' . a:id
+    autocmd!
+  augroup END
+
+  " clean up obsolete augroup
+  call filter(s:obsolete_augroup, 'v:val != a:id')
+  for id in s:obsolete_augroup
+    execute 'augroup! highlightedyank-highlight-cancel-' . id
+  endfor
+  call filter(s:obsolete_augroup, 0)
+
+  " queue the current augroup
+  call add(s:obsolete_augroup, a:id)
 endfunction
 "}}}
 let s:quenching_queue = []
