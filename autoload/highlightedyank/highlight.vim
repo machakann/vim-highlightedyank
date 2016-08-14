@@ -158,7 +158,6 @@ function! s:scheduled_quench(id) abort  "{{{
     for highlight in s:quench_table[a:id]
       call highlight.quench()
     endfor
-    redraw
     execute 'augroup highlightedyank-highlight-cancel-' . a:id
       autocmd!
     augroup END
@@ -166,6 +165,7 @@ function! s:scheduled_quench(id) abort  "{{{
     unlet s:quench_table[a:id]
   finally
     call s:restore_options(options)
+    redraw
   endtry
 endfunction
 "}}}
