@@ -79,11 +79,12 @@ function! s:yank_normal(count, register) abort "{{{
 endfunction
 "}}}
 function! s:yank_visual(register) abort "{{{
+  let view = winsaveview()
   let region = {}
   let region.head = getpos("'<")
   let region.tail = getpos("'>")
   if s:is_equal_or_ahead(region.tail, region.head)
-    let keyseq = printf('gv%s%s', a:register, "\<Plug>(highlightedyank-y)")
+    let keyseq = printf('%s%s', a:register, "\<Plug>(highlightedyank-y)")
     let motionwise = visualmode()
     let hi_group = 'HighlightedyankRegion'
     let hi_duration = s:get('highlight_duration', 1000)
@@ -100,6 +101,10 @@ function! s:yank_visual(register) abort "{{{
     finally
       call s:restore_options(options)
     endtry
+
+    " NOTE: Press 'gv' inside, countermeasure for flickering.
+    normal! gv
+    call winrestview(view)
     call feedkeys(keyseq, 'it')
   endif
 endfunction
