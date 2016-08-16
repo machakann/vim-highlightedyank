@@ -295,7 +295,7 @@ function! s:input_echo(...) abort  "{{{
 endfunction
 "}}}
 function! s:flash_echo(...) abort  "{{{
-  if !s:working
+  if !s:working && mode() !~# '[cr!]'
     echo ''
     let s:flash_echo_id = 0
   endif
