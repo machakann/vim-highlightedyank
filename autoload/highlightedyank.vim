@@ -102,9 +102,15 @@ function! s:yank_visual(register) abort "{{{
       call s:restore_options(options)
     endtry
 
-    " NOTE: Press 'gv' inside, countermeasure for flickering.
+    " NOTE: countermeasure for flickering.
     normal! gv
-    call winrestview(view)
+    if line('.') != view.lnum
+      normal! o
+    endif
+    if line('.') == view.lnum && col('.') - 1 == view.col
+      call winrestview(view)
+    endif
+
     call feedkeys(keyseq, 'it')
   endif
 endfunction
