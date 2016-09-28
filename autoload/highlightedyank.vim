@@ -58,6 +58,7 @@ function! s:yank_normal(count, register) abort "{{{
     let hi_group = 'HighlightedyankRegion'
     let hi_duration = s:get('highlight_duration', 1000)
 
+    let errmsg = ''
     let options = s:shift_options()
     try
       let highlight = highlightedyank#highlight#new()
@@ -67,13 +68,19 @@ function! s:yank_normal(count, register) abort "{{{
       elseif hi_duration > 0
         let keyseq .= {s:highlight_func}(highlight, hi_group, hi_duration)
       endif
+    catch
+      let errmsg = printf('highlightedyank: Unanticipated error. [%s] %s', v:throwpoint, v:exception)
     finally
       call s:restore_options(options)
       call winrestview(view)
+      call feedkeys(keyseq, 'itx')
+
+      if errmsg !=# ''
+        echoerr errmsg
+      endif
     endtry
-    call feedkeys(keyseq, 'it')
   else
-    call feedkeys(":echo ''\<CR>", 'in')
+    normal! :
     call winrestview(view)
   endif
 endfunction
@@ -100,18 +107,17 @@ function! s:yank_visual(register) abort "{{{
       endif
     finally
       call s:restore_options(options)
+
+      " NOTE: countermeasure for flickering.
+      normal! gv
+      if line('.') != view.lnum
+        normal! o
+      endif
+      if line('.') == view.lnum && col('.') - 1 == view.col
+        call winrestview(view)
+      endif
+      call feedkeys(keyseq, 'itx')
     endtry
-
-    " NOTE: countermeasure for flickering.
-    normal! gv
-    if line('.') != view.lnum
-      normal! o
-    endif
-    if line('.') == view.lnum && col('.') - 1 == view.col
-      call winrestview(view)
-    endif
-
-    call feedkeys(keyseq, 'it')
   endif
 endfunction
 "}}}
@@ -281,10 +287,6 @@ endfunction
 "}}}
 function! s:highlight_off_by_TextChanged(highlight) abort  "{{{
   return !a:highlight.is_text_identical()
-endfunction
-"}}}
-function! s:after_echo() abort  "{{{
-  call s:input_echo(s:input)
 endfunction
 "}}}
 function! s:input_echo(...) abort  "{{{
