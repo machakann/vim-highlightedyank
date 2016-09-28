@@ -126,27 +126,32 @@ function! s:query(count) abort "{{{
   let input = ''
   let region = deepcopy(s:null_region)
   let motionwise = ''
-  call s:input_echo()
-  while 1
-    let c = getchar(0)
-    if empty(c)
-      sleep 20m
-      continue
-    endif
+  let dummycursor = s:put_dummy_cursor(curpos)
+  try
+    call s:input_echo()
+    while 1
+      let c = getchar(0)
+      if empty(c)
+        sleep 20m
+        continue
+      endif
 
-    let c = type(c) == s:type_num ? nr2char(c) : c
-    if c ==# "\<Esc>"
-      break
-    endif
+      let c = type(c) == s:type_num ? nr2char(c) : c
+      if c ==# "\<Esc>"
+        break
+      endif
 
-    let input .= c
-    let [region, motionwise] = s:get_region(curpos, a:count, input)
-    call s:input_echo(input)
-    if motionwise !=# ''
-      call s:modify_region(region)
-      break
-    endif
-  endwhile
+      let input .= c
+      let [region, motionwise] = s:get_region(curpos, a:count, input)
+      call s:input_echo(input)
+      if motionwise !=# ''
+        call s:modify_region(region)
+        break
+      endif
+    endwhile
+  finally
+    call s:clear_dummy_cursor(dummycursor)
+  endtry
   return [input, region, motionwise]
 endfunction
 "}}}
@@ -196,6 +201,20 @@ function! s:operator_get_region(motionwise) abort "{{{
   let s:region.head = head
   let s:region.tail = tail
   let s:motionwise = a:motionwise
+endfunction
+"}}}
+function! s:put_dummy_cursor(curpos) abort "{{{
+  let dummycursor = highlightedyank#highlight#new()
+  if hlexists('Cursor')
+    call dummycursor.order({'head': a:curpos, 'tail': a:curpos}, 'v')
+    call dummycursor.show('Cursor')
+    redraw
+  endif
+  return dummycursor
+endfunction
+"}}}
+function! s:clear_dummy_cursor(dummycursor) abort  "{{{
+  call a:dummycursor.quench()
 endfunction
 "}}}
 function! s:persist(highlight, hi_group) abort  "{{{
@@ -324,7 +343,7 @@ function! s:shift_options() abort "{{{
   " hide_cursor
   if s:has_gui_running
     let options.cursor = &guicursor
-    set guicursor+=n-o:block-NONE
+    set guicursor+=a:block-NONE
   else
     let options.cursor = &t_ve
     set t_ve=
