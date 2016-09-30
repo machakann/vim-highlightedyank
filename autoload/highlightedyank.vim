@@ -90,8 +90,23 @@ function! highlightedyank#autocmd_highlight() abort "{{{
   let region = {}
   let region.head = getpos("'[")
   let region.tail = getpos("']")
-  let motionwise = 'char'
+  let char = getline(region.tail[1])[region.tail[2] - 1]
+  let linecontent = v:event.regcontents[len(v:event.regcontents) - 1]
+  let tailchar = linecontent[len(linecontent) - 1]
+  if char != tailchar
+    let region.tail[2] = region.tail[2] - 1
+  endif
+  if v:event.regtype == 'v'
+    let motionwise = 'char'
+  elseif v:event.regtype == 'V'
+    let motionwise = 'line'
+  elseif v:event.regtype =~ "\<c-v>"
+    let motionwise = 'block'
+  else
+    let motionwise = ''
+  endif
   if motionwise !=# ''
+    call s:modify_region(region)
     let hi_group = 'HighlightedyankRegion'
     let hi_duration = s:get('highlight_duration', 1000)
 
@@ -118,6 +133,7 @@ function! highlightedyank#autocmd_highlight() abort "{{{
     normal! :
   endif
 endfunction
+"}}}
 function! s:yank_visual(register) abort "{{{
   let view = winsaveview()
   let region = {}
