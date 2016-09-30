@@ -26,3 +26,6 @@ noremap <Plug>(highlightedyank-y) y
 noremap <Plug>(highlightedyank-g@) g@
 noremap <Plug>(highlightedyank-doublequote) "
 
+if exists('##TextYankPost') && !exists('g:highlightedyank_disable_autocmd')
+  autocmd neoyank TextYankPost * silent call highlightedyank#autocmd_highlight()
+endif
