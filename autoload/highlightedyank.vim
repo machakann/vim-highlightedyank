@@ -96,14 +96,9 @@ function! highlightedyank#autocmd_highlight() abort "{{{
   if char != tailchar
     let region.tail[2] = region.tail[2] - 1
   endif
-  if v:event.regtype == 'v'
-    let motionwise = 'char'
-  elseif v:event.regtype == 'V'
-    let motionwise = 'line'
-  elseif v:event.regtype =~ "\<c-v>"
+  let motionwise = v:event.regtype
+  if motionwise =~ "\<c-v>"
     let motionwise = 'block'
-  else
-    let motionwise = ''
   endif
   if motionwise !=# ''
     call s:modify_region(region)
