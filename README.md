@@ -6,6 +6,8 @@ Make the yanked region apparent!
 map y <Plug>(highlightedyank)
 ```
 
+If you use Neovim, there is no need for configuration, as the highlight event is automatically triggered by the TextYankPost event.
+
 If you want to optimize highlight duration, use `g:highlightedyank_highlight_duration` , `b:highlightedyank_highlight_duration`. Assign number of time in milli seconds.
 ```vim
 let g:highlightedyank_highlight_duration = 1000
