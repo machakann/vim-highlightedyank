@@ -58,7 +58,7 @@ function! s:yank_normal(count, register) abort "{{{
     let hi_group = 'HighlightedyankRegion'
     let hi_duration = s:get('highlight_duration', 1000)
 
-    let errmsg = ''
+    let error_message = ''
     let options = s:shift_options()
     try
       let highlight = highlightedyank#highlight#new()
@@ -69,14 +69,14 @@ function! s:yank_normal(count, register) abort "{{{
         let keyseq .= {s:highlight_func}(highlight, hi_group, hi_duration)
       endif
     catch
-      let errmsg = printf('highlightedyank: Unanticipated error. [%s] %s', v:throwpoint, v:exception)
+      let error_message = printf('highlightedyank: Unanticipated error. [%s] %s', v:throwpoint, v:exception)
     finally
       call s:restore_options(options)
       call winrestview(view)
       call feedkeys(keyseq, 'itx')
 
-      if errmsg !=# ''
-        echoerr errmsg
+      if error_message !=# ''
+        echoerr error_message
       endif
     endtry
   else
@@ -385,7 +385,7 @@ function! highlightedyank#autocmd_highlight() abort "{{{
     let hi_group = 'HighlightedyankRegion'
     let hi_duration = s:get('highlight_duration', 1000)
 
-    let errmsg = ''
+    let error_message = ''
     let options = s:shift_options()
     try
       let highlight = highlightedyank#highlight#new()
@@ -396,12 +396,12 @@ function! highlightedyank#autocmd_highlight() abort "{{{
         call {s:highlight_func}(highlight, hi_group, hi_duration)
       endif
     catch
-      let errmsg = printf('highlightedyank: Unanticipated error. [%s] %s', v:throwpoint, v:exception)
+      let error_message = printf('highlightedyank: Unanticipated error. [%s] %s', v:throwpoint, v:exception)
     finally
       call s:restore_options(options)
 
-      if errmsg !=# ''
-        echoerr errmsg
+      if error_message !=# ''
+        echoerr error_message
       endif
     endtry
   else
