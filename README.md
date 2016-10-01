@@ -19,3 +19,6 @@ let g:highlightedyank_highlight_duration = -1
 When a new text is yanked, the old highlighting would be deleted. Or when
 former lines are edited, the highlighting would be deleted to prevent shifting
 the position, also.
+
+## Demo
+![vim-highlightedyank](http://imgur.com/u5O57Gg.gif)
