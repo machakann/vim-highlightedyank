@@ -1,5 +1,5 @@
 " highlighted-yank: Make the yanked region apparent!
-" Last Change: 10-Aug-2016.
+" Last Change: 01-Oct-2016.
 " Maintainer : Masaaki Nakamura <mckn@outlook.com>
 
 " License    : NYSL
@@ -27,5 +27,7 @@ noremap <Plug>(highlightedyank-g@) g@
 noremap <Plug>(highlightedyank-doublequote) "
 
 if exists('##TextYankPost') && !exists('g:highlightedyank_disable_autocmd')
-  autocmd neoyank TextYankPost * silent call highlightedyank#autocmd_highlight()
+  augroup highlightedyank
+    autocmd TextYankPost * silent call highlightedyank#autocmd_highlight()
+  augroup END
 endif
