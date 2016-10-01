@@ -85,50 +85,6 @@ function! s:yank_normal(count, register) abort "{{{
   endif
 endfunction
 "}}}
-function! highlightedyank#autocmd_highlight() abort "{{{
-  let view = winsaveview()
-  let region = {}
-  let region.head = getpos("'[")
-  let region.tail = getpos("']")
-  let char = getline(region.tail[1])[region.tail[2] - 1]
-  let linecontent = v:event.regcontents[len(v:event.regcontents) - 1]
-  let tailchar = linecontent[len(linecontent) - 1]
-  if char != tailchar
-    let region.tail[2] = region.tail[2] - 1
-  endif
-  let motionwise = v:event.regtype
-  if motionwise =~ "\<c-v>"
-    let motionwise = 'block'
-  endif
-  if motionwise !=# ''
-    call s:modify_region(region)
-    let hi_group = 'HighlightedyankRegion'
-    let hi_duration = s:get('highlight_duration', 1000)
-
-    let errmsg = ''
-    let options = s:shift_options()
-    try
-      let highlight = highlightedyank#highlight#new()
-      call highlight.order(region, motionwise)
-      if hi_duration < 0
-        call s:persist(highlight, hi_group)
-      elseif hi_duration > 0
-        call {s:highlight_func}(highlight, hi_group, hi_duration)
-      endif
-    catch
-      let errmsg = printf('highlightedyank: Unanticipated error. [%s] %s', v:throwpoint, v:exception)
-    finally
-      call s:restore_options(options)
-
-      if errmsg !=# ''
-        echoerr errmsg
-      endif
-    endtry
-  else
-    normal! :
-  endif
-endfunction
-"}}}
 function! s:yank_visual(register) abort "{{{
   let view = winsaveview()
   let region = {}
@@ -412,6 +368,100 @@ endfunction
 "}}}
 function! s:is_equal_or_ahead(pos1, pos2) abort  "{{{
   return a:pos1[1] > a:pos2[1] || (a:pos1[1] == a:pos2[1] && a:pos1[2] >= a:pos2[2])
+endfunction
+"}}}
+function! s:escape(string) abort  "{{{
+  return escape(a:string, '~"\.^$[]*')
+endfunction
+"}}}
+
+" for neovim
+function! highlightedyank#autocmd_highlight() abort "{{{
+  let view = winsaveview()
+  let motionwise = v:event.regtype
+  let region = s:derive_region(motionwise, v:event.regcontents)
+  if motionwise !=# ''
+    call s:modify_region(region)
+    let hi_group = 'HighlightedyankRegion'
+    let hi_duration = s:get('highlight_duration', 1000)
+
+    let errmsg = ''
+    let options = s:shift_options()
+    try
+      let highlight = highlightedyank#highlight#new()
+      call highlight.order(region, motionwise)
+      if hi_duration < 0
+        call s:persist(highlight, hi_group)
+      elseif hi_duration > 0
+        call {s:highlight_func}(highlight, hi_group, hi_duration)
+      endif
+    catch
+      let errmsg = printf('highlightedyank: Unanticipated error. [%s] %s', v:throwpoint, v:exception)
+    finally
+      call s:restore_options(options)
+
+      if errmsg !=# ''
+        echoerr errmsg
+      endif
+    endtry
+  else
+    normal! :
+  endif
+endfunction
+"}}}
+function! s:derive_region(motionwise, regcontents) abort "{{{
+  if a:motionwise ==# 'char' || a:motionwise ==# 'v'
+    let region = s:derive_region_char(a:regcontents)
+  elseif a:motionwise ==# 'line' || a:motionwise ==# 'V'
+    let region = s:derive_region_line(a:regcontents)
+  elseif a:motionwise ==# 'block' || a:motionwise[0] ==# "\<C-v>"
+    let region = s:derive_region_block(a:regcontents)
+  else
+    let region = deepcopy(s:null_region)
+  endif
+  return region
+endfunction
+"}}}
+function! s:derive_region_char(regcontents) abort "{{{
+  let len = len(a:regcontents)
+  let region = {}
+  let region.head = getpos("'[")
+  let region.tail = copy(region.head)
+  if len == 0
+    let region = deepcopy(s:null_region)
+  elseif len == 1
+    let region.tail[2] += strlen(a:regcontents[0]) - 1
+  else
+    let region.tail[1] += len - 1
+    let region.tail[2] = strlen(a:regcontents[-1])
+  endif
+  return region
+endfunction
+"}}}
+function! s:derive_region_line(regcontents) abort "{{{
+  let region = {}
+  let region.head = getpos("'[")
+  let region.tail = getpos("']")
+  return region
+endfunction
+"}}}
+function! s:derive_region_block(regcontents) abort "{{{
+  let len = len(a:regcontents)
+  if len == 0
+    let region = deepcopy(s:null_region)
+  else
+    let curpos = getpos('.')
+    let region = {}
+    let region.head = getpos("'[")
+    call setpos('.', region.head)
+    if len > 1
+      execute 'normal! ' . (len - 1) . 'j'
+    endif
+    call search(s:escape(a:regcontents[-1]), 'ce')
+    let region.tail = getpos('.')
+    call setpos('.', curpos)
+  endif
+  return region
 endfunction
 "}}}
 
