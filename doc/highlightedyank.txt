@@ -1,5 +1,5 @@
 *highlightedyank.txt*	Make the yanked region apparent!
-						Last change:28-Jun-2016.
+						Last change:07-Oct-2016.
 
 Author  : machakann <mckn{at}outlook.jp>
 License : NYSL license
@@ -20,12 +20,15 @@ HIGHLIGHT GROUPS			|highlightedyank-highlight-groups|
 ==============================================================================
 INTRODUCTION				*highlightedyank-introduction*
 
-*highlightedyank.vim* is a plugin to just highlight a region where user yank.
-That is a pretty trick to make your coding better. Add the lines into your
+*highlightedyank.vim* is a plugin to just highlight a region where user yanks.
+That is a pretty trick to make your coding easier. Add the lines into your
 vimrc.
 >
 	map y <Plug>(highlightedyank)
 <
+If you are using neovim <https://neovim.io/>, there is no need for
+configuration, as the highlight event is automatically triggered by the
+TextYankPost event.
 
 The highlight duration can be optimized by
 *g:highlightedyank_highlight_duration* ,
@@ -45,13 +48,12 @@ the position, also.
 ==============================================================================
 HIGHLIGHT GROUPS			*highlightedyank-highlight-groups*
 
-If you want to change the highlighting, re-define the following highlight
-groups.
+If you want to change the highlighting color, re-define the following
+highlight group.
 
 HighlightedyankRegion				*hl-HighlightedyankRegion*
 	The highlight group is to define the highlight for yanked region.
-	It is linked to a default highlight group IncSearch |hl-IncSearch| in
-	default.
+	It is linked to a highlight group IncSearch |hl-IncSearch| in default.
 >
 	highlight link HighlightedyankRegion IncSearch
 <
