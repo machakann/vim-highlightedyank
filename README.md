@@ -20,5 +20,12 @@ When a new text is yanked, the old highlighting would be deleted. Or when
 former lines are edited, the highlighting would be deleted to prevent shifting
 the position, also.
 
+If for some reason the highlight is not visible you can redefine the
+`HighlightedyankRegion` highlight group like so:
+
+```
+hi HighlightedyankRegion cterm=reverse gui=reverse
+```
+
 ## Demo
 ![vim-highlightedyank](http://imgur.com/u5O57Gg.gif)
