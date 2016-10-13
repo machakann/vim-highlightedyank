@@ -377,6 +377,10 @@ endfunction
 
 " for neovim
 function! highlightedyank#autocmd_highlight() abort "{{{
+  if v:operator !~# '\%(y\|g@\)' || mode() ==# 'i'
+    return
+  endif
+
   let view = winsaveview()
   let motionwise = v:event.regtype
   let region = s:derive_region(motionwise, v:event.regcontents)
