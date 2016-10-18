@@ -492,6 +492,9 @@ function! s:get_buf_text(region, type) abort  "{{{
     call setpos('.', a:region.tail)
     silent normal! ""y
     let text = @@
+
+    " NOTE: This line is required to reset v:register.
+    normal! :
   finally
     call call('setreg', reg)
     call setpos("'<", visual[0])
