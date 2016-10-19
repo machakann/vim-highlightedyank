@@ -12,6 +12,7 @@ let s:type_num  = type(0)
 
 " features
 let s:has_gui_running = has('gui_running')
+let s:has_timers = has('timers')
 
 " SID
 function! s:SID() abort
@@ -20,15 +21,17 @@ endfunction
 let s:SID = printf("\<SNR>%s_", s:SID())
 delfunction s:SID
 
-" state
-let s:working = 0
-let s:flash_echo_id = 0
-let s:highlight_func = has('timers') ? 's:glow' : 's:blink'
+" intrinsic keymap
+let s:normal = {}
+let s:normal['y']  = "\<Plug>(highlightedyank-y)"
+let s:normal['"']  = "\<Plug>(highlightedyank-doublequote)"
+let s:normal['g@'] = "\<Plug>(highlightedyank-g@)"
+let s:normal['gv'] = "\<Plug>(highlightedyank-gv)"
 "}}}
 
 function! highlightedyank#yank(mode) abort  "{{{
   let l:count = v:count ? v:count : ''
-  let register = v:register ==# s:default_register() ? '' : "\<Plug>(highlightedyank-doublequote)" . v:register
+  let register = v:register ==# s:default_register() ? '' : s:normal['"'] . v:register
   if a:mode ==# 'n'
     call s:yank_normal(l:count, register)
   elseif a:mode ==# 'x'
@@ -48,87 +51,42 @@ function! s:default_register() abort  "{{{
 endfunction
 "}}}
 function! s:yank_normal(count, register) abort "{{{
-  let view = winsaveview()
-  let s:working = 1
-  let [input, region, motionwise] = s:query(a:count)
-  let s:working = 0
-  if motionwise !=# ''
-    let keyseq = printf('%s%s%s%s', a:register, a:count, "\<Plug>(highlightedyank-y)", input)
-    let s:input = input
-    let hi_group = 'HighlightedyankRegion'
-    let hi_duration = s:get('highlight_duration', 1000)
-
-    let error_message = ''
-    let options = s:shift_options()
-    try
-      let highlight = highlightedyank#highlight#new()
-      call highlight.order(region, motionwise)
-      if hi_duration < 0
-        let keyseq .= s:persist(highlight, hi_group)
-      elseif hi_duration > 0
-        let keyseq .= {s:highlight_func}(highlight, hi_group, hi_duration)
-      endif
-    catch
-      let error_message = printf('highlightedyank: Unanticipated error. [%s] %s', v:throwpoint, v:exception)
-    finally
-      call s:restore_options(options)
-      call winrestview(view)
+  let options = s:shift_options()
+  try
+    let [input, region, motionwise] = s:query(a:count)
+    if motionwise !=# ''
+      let keyseq = printf('%s%s%s%s', a:register, a:count, s:normal['y'], input)
       call feedkeys(keyseq, 'itx')
-
-      if error_message !=# ''
-        echoerr error_message
-      endif
-    endtry
-  else
-    normal! :
-    call winrestview(view)
-  endif
+      call s:highlight_yanked_region(region, motionwise)
+    endif
+  finally
+    call s:restore_options(options)
+  endtry
 endfunction
 "}}}
 function! s:yank_visual(register) abort "{{{
-  let view = winsaveview()
-  let region = {}
-  let region.head = getpos("'<")
-  let region.tail = getpos("'>")
+  let region = {'head': getpos("'<"), 'tail': getpos("'>")}
   if s:is_equal_or_ahead(region.tail, region.head)
-    let keyseq = printf('%s%s', a:register, "\<Plug>(highlightedyank-y)")
     let motionwise = visualmode()
-    let hi_group = 'HighlightedyankRegion'
-    let hi_duration = s:get('highlight_duration', 1000)
-
     let options = s:shift_options()
     try
-      let highlight = highlightedyank#highlight#new()
-      call highlight.order(region, motionwise)
-      if hi_duration < 0
-        let keyseq .= s:persist(highlight, hi_group)
-      elseif hi_duration > 0
-        let keyseq .= {s:highlight_func}(highlight, hi_group, hi_duration)
-      endif
+      let keyseq = printf('%s%s%s', s:normal['gv'], a:register, s:normal['y'])
+      call feedkeys(keyseq, 'itx')
+      call s:highlight_yanked_region(region, motionwise)
     finally
       call s:restore_options(options)
-
-      " NOTE: countermeasure for flickering.
-      normal! gv
-      if line('.') != view.lnum
-        normal! o
-      endif
-      if line('.') == view.lnum && col('.') - 1 == view.col
-        call winrestview(view)
-      endif
-      call feedkeys(keyseq, 'itx')
     endtry
   endif
 endfunction
 "}}}
 function! s:query(count) abort "{{{
+  let view = winsaveview()
   let curpos = getpos('.')
   let input = ''
   let region = deepcopy(s:null_region)
   let motionwise = ''
   let dummycursor = s:put_dummy_cursor(curpos)
   try
-    call s:input_echo()
     while 1
       let c = getchar(0)
       if empty(c)
@@ -143,7 +101,6 @@ function! s:query(count) abort "{{{
 
       let input .= c
       let [region, motionwise] = s:get_region(curpos, a:count, input)
-      call s:input_echo(input)
       if motionwise !=# ''
         call s:modify_region(region)
         break
@@ -151,6 +108,7 @@ function! s:query(count) abort "{{{
     endwhile
   finally
     call s:clear_dummy_cursor(dummycursor)
+    call winrestview(view)
   endtry
   return [input, region, motionwise]
 endfunction
@@ -163,7 +121,7 @@ function! s:get_region(curpos, count, input) abort  "{{{
   onoremap <Plug>(highlightedyank) g@
   call setpos('.', a:curpos)
   try
-    execute printf("normal %s\<Plug>(highlightedyank-g@)%s", a:count, a:input)
+    execute printf("normal %s%s%s", a:count, s:normal['g@'], a:input)
   catch
     let verbose = get(g:, 'highlightedyank#verbose', 0)
     echohl ErrorMsg
@@ -217,6 +175,24 @@ function! s:clear_dummy_cursor(dummycursor) abort  "{{{
   call a:dummycursor.quench()
 endfunction
 "}}}
+function! s:highlight_yanked_region(region, motionwise) abort "{{{
+  let keyseq = ''
+  let hi_group = 'HighlightedyankRegion'
+  let hi_duration = s:get('highlight_duration', 1000)
+  let highlight = highlightedyank#highlight#new()
+  call highlight.order(a:region, a:motionwise)
+  if hi_duration < 0
+    call s:persist(highlight, hi_group)
+  elseif hi_duration > 0
+    if s:has_timers
+      call s:glow(highlight, hi_group, hi_duration)
+    else
+      let keyseq = s:blink(highlight, hi_group, hi_duration)
+      call feedkeys(keyseq, 'it')
+    endif
+  endif
+endfunction
+"}}}
 function! s:persist(highlight, hi_group) abort  "{{{
   if a:highlight.show(a:hi_group)
     " highlight off: limit the number of highlighting region to one explicitly
@@ -243,10 +219,6 @@ function! s:glow(highlight, hi_group, duration) abort "{{{
     call highlightedyank#highlight#cancel()
 
     let id = a:highlight.scheduled_quench(a:duration)
-    if s:flash_echo_id > 0
-      call timer_stop(s:flash_echo_id)
-    endif
-    let s:flash_echo_id = timer_start(a:duration, s:SID . 'flash_echo')
     call s:cancel_if_edited(id)
   endif
   return ''
@@ -308,34 +280,6 @@ function! s:highlight_off_by_TextChanged(highlight) abort  "{{{
   return !a:highlight.is_text_identical()
 endfunction
 "}}}
-function! s:input_echo(...) abort  "{{{
-  let messages = [
-        \   ['highlighted-yank', 'ModeMsg'],
-        \   [': ', 'NONE'],
-        \   ['Input motion/textobject', 'MoreMsg'],
-        \   [': ', 'NONE'],
-        \ ]
-  if a:0 > 0
-    let messages += [[a:1, 'Special']]
-  endif
-  call s:echo(messages)
-endfunction
-"}}}
-function! s:flash_echo(...) abort  "{{{
-  if !s:working && mode() !~# '[cr!]'
-    echo ''
-    let s:flash_echo_id = 0
-  endif
-endfunction
-"}}}
-function! s:echo(messages) abort  "{{{
-  for [mes, hi_group] in a:messages
-    execute 'echohl ' . hi_group
-    echon mes
-    echohl NONE
-  endfor
-endfunction
-"}}}
 function! s:shift_options() abort "{{{
   let options = {}
 
@@ -386,30 +330,7 @@ function! highlightedyank#autocmd_highlight() abort "{{{
   let region = s:derive_region(motionwise, v:event.regcontents)
   if motionwise !=# ''
     call s:modify_region(region)
-    let hi_group = 'HighlightedyankRegion'
-    let hi_duration = s:get('highlight_duration', 1000)
-
-    let error_message = ''
-    let options = s:shift_options()
-    try
-      let highlight = highlightedyank#highlight#new()
-      call highlight.order(region, motionwise)
-      if hi_duration < 0
-        call s:persist(highlight, hi_group)
-      elseif hi_duration > 0
-        call {s:highlight_func}(highlight, hi_group, hi_duration)
-      endif
-    catch
-      let error_message = printf('highlightedyank: Unanticipated error. [%s] %s', v:throwpoint, v:exception)
-    finally
-      call s:restore_options(options)
-
-      if error_message !=# ''
-        echoerr error_message
-      endif
-    endtry
-  else
-    normal! :
+    call s:highlight_yanked_region(region, motionwise)
   endif
 endfunction
 "}}}
