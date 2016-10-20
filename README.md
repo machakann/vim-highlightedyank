@@ -28,4 +28,4 @@ hi HighlightedyankRegion cterm=reverse gui=reverse
 ```
 
 ## Demo
-![vim-highlightedyank](http://imgur.com/u5O57Gg.gif)
+![vim-highlightedyank](http://i.imgur.com/HulyZ6n.gif)
