@@ -484,6 +484,7 @@ function! s:get_buf_text(region, type) abort  "{{{
   "       Use visual selection+operator as following.
   let text = ''
   let visual = [getpos("'<"), getpos("'>")]
+  let modified = [getpos("'["), getpos("']")]
   let reg = ['"', getreg('"'), getregtype('"')]
   let view = winsaveview()
   try
@@ -499,6 +500,8 @@ function! s:get_buf_text(region, type) abort  "{{{
     call call('setreg', reg)
     call setpos("'<", visual[0])
     call setpos("'>", visual[1])
+    call setpos("'[", modified[0])
+    call setpos("']", modified[1])
     call winrestview(view)
     return text
   endtry
