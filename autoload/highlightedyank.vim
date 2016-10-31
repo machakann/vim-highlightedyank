@@ -55,9 +55,9 @@ function! s:yank_normal(count, register) abort "{{{
   try
     let [input, region, motionwise] = s:query(a:count)
     if motionwise !=# ''
+      call s:highlight_yanked_region(region, motionwise)
       let keyseq = printf('%s%s%s%s', a:register, a:count, s:normal['y'], input)
       call feedkeys(keyseq, 'itx')
-      call s:highlight_yanked_region(region, motionwise)
     endif
   finally
     call s:restore_options(options)
@@ -70,9 +70,9 @@ function! s:yank_visual(register) abort "{{{
     let motionwise = visualmode()
     let options = s:shift_options()
     try
+      call s:highlight_yanked_region(region, motionwise)
       let keyseq = printf('%s%s%s', s:normal['gv'], a:register, s:normal['y'])
       call feedkeys(keyseq, 'itx')
-      call s:highlight_yanked_region(region, motionwise)
     finally
       call s:restore_options(options)
     endtry
