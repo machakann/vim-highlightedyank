@@ -103,7 +103,7 @@ function! s:highlight.quench() dict abort "{{{
       augroup END
       let succeeded = 0
     else
-      if s:search_highlighted_windows(self.id, tabnr) != [0, 0]
+      if s:search_highlighted_window(self.id) != [0, 0]
         call map(self.id, 'matchdelete(v:val)')
         call filter(self.id, 'v:val > 0')
       else
@@ -432,41 +432,44 @@ function! s:restore_options(options) abort "{{{
   endif
 endfunction
 "}}}
-function! s:search_highlighted_windows(id, ...) abort  "{{{
-  let original_winnr = winnr()
-  let original_tabnr = tabpagenr()
-  if a:id != []
-    let tablist = range(1, tabpagenr('$'))
-    if a:0 > 0
-      let tabnr = a:1
-      let [tabnr, winnr] = s:scan_windows(a:id, tabnr)
-      if tabnr != 0
-        return [tabnr, winnr]
-      endif
-      call filter(tablist, 'v:val != tabnr')
-    endif
-
-    for tabnr in tablist
-      let [tabnr, winnr] = s:scan_windows(a:id, tabnr)
-      if tabnr != 0
-        return [tabnr, winnr]
-      endif
-    endfor
+function! s:search_highlighted_window(id) abort  "{{{
+  if a:id == []
+    return [0, 0]
   endif
-  execute 'tabnext ' . original_tabnr
-  execute original_winnr . 'wincmd w'
+
+  let current_winnr = winnr()
+  let current_tabnr = tabpagenr()
+
+  " check the current window in the current tab
+  if s:is_highlight_exists(a:id)
+    return [current_winnr, current_tabnr]
+  endif
+  " check the windows in the current tab
+  let winnr = s:scan_windows(a:id)
+  if winnr != 0
+    return [current_tabnr, winnr]
+  endif
+  " check all tabs
+  for tabnr in filter(range(1, tabpagenr('$')), 'v:val != current_tabnr')
+    let winnr = s:scan_windows(a:id, tabnr)
+    if winnr != 0
+      return [tabnr, winnr]
+    endif
+  endfor
   return [0, 0]
 endfunction
 "}}}
-function! s:scan_windows(id, tabnr) abort "{{{
-  if s:goto_tab(a:tabnr)
-    for winnr in range(1, winnr('$'))
-      if s:goto_window(winnr) && s:is_highlight_exists(a:id)
-        return [a:tabnr, winnr]
-      endif
-    endfor
+function! s:scan_windows(id, ...) abort "{{{
+  if a:0 > 0 && !s:goto_tab(a:1)
+    return 0
   endif
-  return [0, 0]
+
+  for winnr in range(1, winnr('$'))
+    if s:goto_window(winnr) && s:is_highlight_exists(a:id)
+      return winnr
+    endif
+  endfor
+  return 0
 endfunction
 "}}}
 function! s:is_highlight_exists(id) abort "{{{
