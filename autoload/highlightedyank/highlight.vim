@@ -158,12 +158,16 @@ function! s:scheduled_quench(id) abort  "{{{
     for highlight in s:quench_table[a:id]
       call highlight.quench()
     endfor
-    unlet s:quench_table[a:id]
-    call s:metabolize_augroup(a:id)
+  catch /^Vim\%((\a\+)\)\=:E523/
+    " FIXME :wincmd command in quench() may fails in some reasons.
+    "       However I'm not sure the reason, <expr>? or completion pop-up?
+    return 1
   finally
     call s:restore_options(options)
     redraw
   endtry
+  unlet s:quench_table[a:id]
+  call s:metabolize_augroup(a:id)
 endfunction
 "}}}
 function! highlightedyank#highlight#cancel(...) abort "{{{
