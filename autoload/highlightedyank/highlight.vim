@@ -167,7 +167,7 @@ function! s:scheduled_quench(id) abort  "{{{
   finally
     unlet s:quench_table[a:id]
     call s:metabolize_augroup(a:id)
-    call timer_stop(id)
+    call timer_stop(a:id)
     call s:restore_options(options)
     redraw
   endtry
