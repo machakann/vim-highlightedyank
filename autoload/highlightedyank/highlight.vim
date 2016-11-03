@@ -437,14 +437,8 @@ function! s:search_highlighted_window(id) abort  "{{{
     return [0, 0]
   endif
 
-  let current_winnr = winnr()
-  let current_tabnr = tabpagenr()
-
-  " check the current window in the current tab
-  if s:is_highlight_exists(a:id)
-    return [current_winnr, current_tabnr]
-  endif
   " check the windows in the current tab
+  let current_tabnr = tabpagenr()
   let winnr = s:scan_windows(a:id)
   if winnr != 0
     return [current_tabnr, winnr]
