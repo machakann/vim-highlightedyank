@@ -159,15 +159,18 @@ function! s:scheduled_quench(id) abort  "{{{
       call highlight.quench()
     endfor
   catch /^Vim\%((\a\+)\)\=:E523/
-    " FIXME :wincmd command in quench() may fails in some reasons.
-    "       However I'm not sure the reason, <expr>? or completion pop-up?
+    " NOTE: TextYankPost event sets "textlock"
+    for highlight in s:quench_table[a:id]
+      call highlight.scheduled_quench(1)
+    endfor
     return 1
   finally
+    unlet s:quench_table[a:id]
+    call s:metabolize_augroup(a:id)
+    call timer_stop(id)
     call s:restore_options(options)
     redraw
   endtry
-  unlet s:quench_table[a:id]
-  call s:metabolize_augroup(a:id)
 endfunction
 "}}}
 function! highlightedyank#highlight#cancel(...) abort "{{{
@@ -179,9 +182,6 @@ function! highlightedyank#highlight#cancel(...) abort "{{{
 
   for id in id_list
     call s:scheduled_quench(id)
-    if id >= 0
-      call timer_stop(id)
-    endif
   endfor
 endfunction
 "}}}
