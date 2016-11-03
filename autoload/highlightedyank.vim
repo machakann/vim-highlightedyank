@@ -194,10 +194,10 @@ function! s:highlight_yanked_region(region, motionwise) abort "{{{
 endfunction
 "}}}
 function! s:persist(highlight, hi_group) abort  "{{{
-  if a:highlight.show(a:hi_group)
-    " highlight off: limit the number of highlighting region to one explicitly
-    call highlightedyank#highlight#cancel()
+  " highlight off: limit the number of highlighting region to one explicitly
+  call highlightedyank#highlight#cancel()
 
+  if a:highlight.show(a:hi_group)
     let id = a:highlight.persist()
     call s:cancel_if_edited(id)
   endif
@@ -214,10 +214,10 @@ function! s:blink(highlight, hi_group, duration) abort "{{{
 endfunction
 "}}}
 function! s:glow(highlight, hi_group, duration) abort "{{{
-  if a:highlight.show(a:hi_group)
-    " highlight off: limit the number of highlighting region to one explicitly
-    call highlightedyank#highlight#cancel()
+  " highlight off: limit the number of highlighting region to one explicitly
+  call highlightedyank#highlight#cancel()
 
+  if a:highlight.show(a:hi_group)
     let id = a:highlight.scheduled_quench(a:duration)
     call s:cancel_if_edited(id)
   endif
