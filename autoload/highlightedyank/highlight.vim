@@ -368,7 +368,7 @@ function! s:goto_window(winnr, ...) abort "{{{
 
   try
     if a:winnr != winnr()
-      execute a:winnr . 'wincmd w'
+      execute printf('noautocmd %swincmd w', a:winnr)
     endif
   catch /^Vim\%((\a\+)\)\=:E16/
     return 0
@@ -383,7 +383,7 @@ endfunction
 "}}}
 function! s:goto_tab(tabnr) abort  "{{{
   if a:tabnr != tabpagenr()
-    execute 'tabnext ' . a:tabnr
+    execute 'noautocmd tabnext ' . a:tabnr
   endif
   return tabpagenr() == a:tabnr ? 1 : 0
 endfunction
