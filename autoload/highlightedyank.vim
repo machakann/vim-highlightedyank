@@ -86,7 +86,6 @@ function! s:query(count) abort "{{{
   let region = deepcopy(s:null_region)
   let motionwise = ''
   let dummycursor = s:put_dummy_cursor(curpos)
-  call inputsave()
   try
     while 1
       let c = getchar(0)
@@ -110,7 +109,6 @@ function! s:query(count) abort "{{{
   finally
     call s:clear_dummy_cursor(dummycursor)
     call winrestview(view)
-    call inputrestore()
   endtry
   return [input, region, motionwise]
 endfunction
