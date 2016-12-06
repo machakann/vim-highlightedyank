@@ -331,6 +331,7 @@ function! highlightedyank#autocmd_highlight() abort "{{{
   if motionwise !=# ''
     call s:modify_region(region)
     call s:highlight_yanked_region(region, motionwise)
+    call winrestview(view)
   endif
 endfunction
 "}}}
