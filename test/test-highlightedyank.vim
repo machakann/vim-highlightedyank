@@ -4,7 +4,7 @@ endif
 execute 'set runtimepath+=' . expand('<sfile>:p:h:h')
 runtime! plugin/*.vim
 scriptencoding utf-8
-let s:is_win = has('win32') || system('uname') =~# 'MSYS'
+let s:is_win = has('win32') || system('uname') =~# '\%(MSYS\|MINGW\)'
 
 " test utility  "{{{
 function! s:assert(a1, a2, kind) abort  "{{{
