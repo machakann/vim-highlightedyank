@@ -505,7 +505,7 @@ function! s:get_buf_text(region, type) abort  "{{{
     call setpos('.', a:region.head)
     execute 'normal! ' . s:v(a:type)
     call setpos('.', a:region.tail)
-    silent normal! ""y
+    silent noautocmd normal! ""y
     let text = @@
 
     " NOTE: This line is required to reset v:register.
