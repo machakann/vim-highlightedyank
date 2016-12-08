@@ -44,6 +44,7 @@ let s:highlight = {
       \   'region': {},
       \   'motionwise': '',
       \   'bufnr': 0,
+      \   'winid': 0,
       \ }
 "}}}
 function! s:highlight.order(region, motionwise) dict abort  "{{{
@@ -61,26 +62,37 @@ function! s:highlight.order(region, motionwise) dict abort  "{{{
   let self.motionwise = a:motionwise
 endfunction
 "}}}
-function! s:highlight.show(hi_group) dict abort "{{{
+function! s:highlight.show(...) dict abort "{{{
   if self.order_list == []
     return 0
   endif
 
-  if self.status && a:hi_group !=# self.group
-    call self.quench()
+  if a:0 < 1
+    if self.group ==# ''
+      return 0
+    else
+      let hi_group = self.group
+    endif
+  else
+    let hi_group = a:1
   endif
 
   if self.status
-    return 0
+    if hi_group ==# self.group
+      return 0
+    else
+      call self.quench()
+    endif
   endif
 
   for order in self.order_list
-    let self.id += s:matchaddpos(a:hi_group, order)
+    let self.id += s:matchaddpos(hi_group, order)
   endfor
   call filter(self.id, 'v:val > 0')
   let self.status = 1
-  let self.group = a:hi_group
+  let self.group = hi_group
   let self.bufnr = bufnr('%')
+  let self.winid = win_getid()
   let self.text  = s:get_buf_text(self.region, self.motionwise)
   return 1
 endfunction
@@ -119,31 +131,28 @@ function! s:highlight.quench() dict abort "{{{
 
   if succeeded
     let self.status = 0
-    let self.group = ''
   endif
   return succeeded
 endfunction
 "}}}
-function! s:highlight.scheduled_quench(time, ...) dict abort  "{{{
-  let id = get(a:000, 0, -1)
-  if id < 0
-    let id = timer_start(a:time, s:SID . 'scheduled_quench')
+function! s:highlight.show_a_while(hi_group, time) dict abort  "{{{
+  if !self.show(a:hi_group)
+    return
   endif
-
-  if !has_key(s:quench_table, id)
-    let s:quench_table[id] = []
-  endif
-  let s:quench_table[id] += [self]
+  let id = self.quench_timer(a:time)
+  call s:set_autocmds(id)
+endfunction
+"}}}
+function! s:highlight.quench_timer(time) dict abort "{{{
+  let id = timer_start(a:time, s:SID . 'scheduled_quench')
+  let s:quench_table[id] = self
   return id
 endfunction
 "}}}
-function! s:highlight.persist(...) dict abort  "{{{
-  let id = a:0 > 0 ? a:1 : s:get_pid()
-
-  if !has_key(s:quench_table, id)
-    let s:quench_table[id] = []
-  endif
-  let s:quench_table[id] += [self]
+function! s:highlight.persist() dict abort  "{{{
+  let id = s:get_pid()
+  call s:set_autocmds(id)
+  let s:quench_table[id] = self
   return id
 endfunction
 "}}}
@@ -158,14 +167,12 @@ let s:obsolete_augroup = []
 function! s:scheduled_quench(id) abort  "{{{
   let options = s:shift_options()
   try
-    for highlight in s:quench_table[a:id]
-      call highlight.quench()
-    endfor
+    let highlight = s:quench_table[a:id]
+    call highlight.quench()
   catch /^Vim\%((\a\+)\)\=:E523/
     " NOTE: TextYankPost event sets "textlock"
-    for highlight in s:quench_table[a:id]
-      call highlight.scheduled_quench(1)
-    endfor
+    let highlight = s:quench_table[a:id]
+    call highlight.quench_timer(50)
     return 1
   finally
     unlet s:quench_table[a:id]
@@ -189,19 +196,19 @@ function! highlightedyank#highlight#cancel(...) abort "{{{
 endfunction
 "}}}
 function! highlightedyank#highlight#get(id) abort "{{{
-  return get(s:quench_table, a:id, [])
+  return get(s:quench_table, a:id, {})
 endfunction
 "}}}
 function! s:metabolize_augroup(id) abort  "{{{
   " clean up autocommands in the current augroup
-  execute 'augroup highlightedyank-highlight-cancel-' . a:id
+  execute 'augroup highlightedyank-highlight-' . a:id
     autocmd!
   augroup END
 
   " clean up obsolete augroup
   call filter(s:obsolete_augroup, 'v:val != a:id')
   for id in s:obsolete_augroup
-    execute 'augroup! highlightedyank-highlight-cancel-' . id
+    execute 'augroup! highlightedyank-highlight-' . id
   endfor
   call filter(s:obsolete_augroup, 0)
 
@@ -525,6 +532,45 @@ function! s:v(v) abort  "{{{
     let v = a:v
   endif
   return v
+endfunction
+"}}}
+function! s:set_autocmds(id) abort "{{{
+  execute 'augroup highlightedyank-highlight-' . a:id
+    autocmd!
+    execute printf('autocmd TextChanged <buffer> call %scancel_highlight(%s, "TextChanged")', s:SID, a:id)
+    execute printf('autocmd InsertEnter <buffer> call %scancel_highlight(%s, "InsertEnter")', s:SID, a:id)
+    execute printf('autocmd BufWinEnter <buffer> call %sresume_highlight(%s)', s:SID, a:id)
+    execute printf('autocmd BufHidden <buffer> call %ssuspend_highlight(%s)', s:SID, a:id)
+  augroup END
+endfunction
+"}}}
+function! s:cancel_highlight(id, event) abort  "{{{
+  let highlight = highlightedyank#highlight#get(a:id)
+  if highlight != {} && highlight.winid == win_getid() && s:highlight_off_by_{a:event}(highlight)
+    call highlightedyank#highlight#cancel(a:id)
+  endif
+endfunction
+"}}}
+function! s:highlight_off_by_InsertEnter(highlight) abort  "{{{
+  return 1
+endfunction
+"}}}
+function! s:highlight_off_by_TextChanged(highlight) abort  "{{{
+  return !a:highlight.is_text_identical()
+endfunction
+"}}}
+function! s:resume_highlight(id) abort "{{{
+  let highlight = highlightedyank#highlight#get(a:id)
+  if highlight != {} && highlight.winid == win_getid()
+    call highlight.show()
+  endif
+endfunction
+"}}}
+function! s:suspend_highlight(id) abort "{{{
+  let highlight = highlightedyank#highlight#get(a:id)
+  if highlight != {} && highlight.winid == win_getid()
+    call highlight.quench()
+  endif
 endfunction
 "}}}
 
