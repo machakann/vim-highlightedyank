@@ -4,6 +4,9 @@
 " null valiables
 let s:null_pos = [0, 0, 0, 0]
 
+" constants
+let s:maxcol = 2147483647
+
 " types
 let s:type_list = type([])
 
@@ -304,7 +307,11 @@ endfunction
 function! s:highlight_order_blockwise(region) abort "{{{
   let view = winsaveview()
   let vcol_head = virtcol(a:region.head[1:2])
-  let vcol_tail = virtcol(a:region.tail[1:2])
+  if a:region.blockwidth == s:maxcol
+    let vcol_tail = a:region.blockwidth
+  else
+    let vcol_tail = vcol_head + a:region.blockwidth - 1
+  endif
   let order = []
   let order_list = []
   let n = 0
