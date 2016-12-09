@@ -102,10 +102,9 @@ function! s:highlight.quench() dict abort "{{{
     return 0
   endif
 
-  let tabnr = tabpagenr()
-  let winnr = winnr()
+  let winid = win_getid()
   let view = winsaveview()
-  if s:is_highlight_exists(self.id)
+  if win_getid() == self.winid
     call map(self.id, 'matchdelete(v:val)')
     call filter(self.id, 'v:val > 0')
     let succeeded = 1
@@ -118,14 +117,15 @@ function! s:highlight.quench() dict abort "{{{
       augroup END
       let succeeded = 0
     else
-      if s:search_highlighted_window(self.id) != [0, 0]
+      if win_gotoid(self.winid)
         call map(self.id, 'matchdelete(v:val)')
         call filter(self.id, 'v:val > 0')
       else
         call filter(self.id, 0)
       endif
       let succeeded = 1
-      call s:goto_window(winnr, tabnr, view)
+      call win_gotoid(winid)
+      call winrestview(view)
     endif
   endif
 
@@ -372,36 +372,6 @@ function! s:is_equal_or_ahead(pos1, pos2) abort  "{{{
   return a:pos1[1] > a:pos2[1] || (a:pos1[1] == a:pos2[1] && a:pos1[2] >= a:pos2[2])
 endfunction
 "}}}
-function! s:goto_window(winnr, ...) abort "{{{
-  if a:0 > 0
-    if !s:goto_tab(a:1)
-      return 0
-    endif
-  endif
-
-
-  try
-    if a:winnr != winnr()
-      execute printf('noautocmd %swincmd w', a:winnr)
-    endif
-  catch /^Vim\%((\a\+)\)\=:E16/
-    return 0
-  endtry
-
-  if a:0 > 1
-    call winrestview(a:2)
-  endif
-
-  return 1
-endfunction
-"}}}
-function! s:goto_tab(tabnr) abort  "{{{
-  if a:tabnr != tabpagenr()
-    execute 'noautocmd tabnext ' . a:tabnr
-  endif
-  return tabpagenr() == a:tabnr ? 1 : 0
-endfunction
-"}}}
 " function! s:is_in_cmdline_window() abort  "{{{
 if s:has_patch_7_4_392
   function! s:is_in_cmdline_window() abort
@@ -444,50 +414,6 @@ function! s:restore_options(options) abort "{{{
   else
     let &t_ve = a:options.cursor
   endif
-endfunction
-"}}}
-function! s:search_highlighted_window(id) abort  "{{{
-  if a:id == []
-    return [0, 0]
-  endif
-
-  " check the windows in the current tab
-  let current_tabnr = tabpagenr()
-  let winnr = s:scan_windows(a:id)
-  if winnr != 0
-    return [current_tabnr, winnr]
-  endif
-  " check all tabs
-  for tabnr in filter(range(1, tabpagenr('$')), 'v:val != current_tabnr')
-    let winnr = s:scan_windows(a:id, tabnr)
-    if winnr != 0
-      return [tabnr, winnr]
-    endif
-  endfor
-  return [0, 0]
-endfunction
-"}}}
-function! s:scan_windows(id, ...) abort "{{{
-  if a:0 > 0 && !s:goto_tab(a:1)
-    return 0
-  endif
-
-  for winnr in range(1, winnr('$'))
-    if s:goto_window(winnr) && s:is_highlight_exists(a:id)
-      return winnr
-    endif
-  endfor
-  return 0
-endfunction
-"}}}
-function! s:is_highlight_exists(id) abort "{{{
-  if a:id != []
-    let id = a:id[0]
-    if filter(getmatches(), 'v:val.id == id') != []
-      return 1
-    endif
-  endif
-  return 0
 endfunction
 "}}}
 function! s:get_buf_text(region, type) abort  "{{{
