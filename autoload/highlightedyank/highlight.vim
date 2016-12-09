@@ -509,7 +509,7 @@ endfunction
 "}}}
 function! s:cancel_highlight(id, event) abort  "{{{
   let highlight = highlightedyank#highlight#get(a:id)
-  if highlight != {} && highlight.winid == win_getid() && s:highlight_off_by_{a:event}(highlight)
+  if highlight != {} && s:highlight_off_by_{a:event}(highlight)
     call highlightedyank#highlight#cancel(a:id)
   endif
 endfunction
