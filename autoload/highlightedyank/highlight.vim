@@ -448,40 +448,40 @@ function! s:get_buf_text(region, type) abort  "{{{
 endfunction
 "}}}
 function! s:saveregisters() abort "{{{
-	let registers = {}
-	let registers['0'] = s:getregister('0')
-	let registers['1'] = s:getregister('1')
-	let registers['2'] = s:getregister('2')
-	let registers['3'] = s:getregister('3')
-	let registers['4'] = s:getregister('4')
-	let registers['5'] = s:getregister('5')
-	let registers['6'] = s:getregister('6')
-	let registers['7'] = s:getregister('7')
-	let registers['8'] = s:getregister('8')
-	let registers['9'] = s:getregister('9')
-	let registers['"'] = s:getregister('"')
-	if &clipboard =~# 'unnamed'
-		let registers['*'] = s:getregister('*')
-	endif
-	if &clipboard =~# 'unnamedplus'
-		let registers['+'] = s:getregister('+')
-	endif
-	return registers
+  let registers = {}
+  let registers['0'] = s:getregister('0')
+  let registers['1'] = s:getregister('1')
+  let registers['2'] = s:getregister('2')
+  let registers['3'] = s:getregister('3')
+  let registers['4'] = s:getregister('4')
+  let registers['5'] = s:getregister('5')
+  let registers['6'] = s:getregister('6')
+  let registers['7'] = s:getregister('7')
+  let registers['8'] = s:getregister('8')
+  let registers['9'] = s:getregister('9')
+  let registers['"'] = s:getregister('"')
+  if &clipboard =~# 'unnamed'
+    let registers['*'] = s:getregister('*')
+  endif
+  if &clipboard =~# 'unnamedplus'
+    let registers['+'] = s:getregister('+')
+  endif
+  return registers
 endfunction
 "}}}
 function! s:restoreregisters(registers) abort "{{{
-	for [register, contains] in items(a:registers)
-		call s:setregister(register, contains)
-	endfor
+  for [register, contains] in items(a:registers)
+    call s:setregister(register, contains)
+  endfor
 endfunction
 "}}}
 function! s:getregister(register) abort "{{{
-	return [getreg(a:register), getregtype(a:register)]
+  return [getreg(a:register), getregtype(a:register)]
 endfunction
 "}}}
 function! s:setregister(register, contains) abort "{{{
-	let [value, options] = a:contains
-	return setreg(a:register, value, options)
+  let [value, options] = a:contains
+  return setreg(a:register, value, options)
 endfunction
 "}}}
 function! s:v(v) abort  "{{{
