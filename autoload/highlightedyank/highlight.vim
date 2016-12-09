@@ -465,8 +465,7 @@ function! s:set_autocmds(id) abort "{{{
     autocmd!
     execute printf('autocmd TextChanged <buffer> call %scancel_highlight(%s, "TextChanged")', s:SID, a:id)
     execute printf('autocmd InsertEnter <buffer> call %scancel_highlight(%s, "InsertEnter")', s:SID, a:id)
-    execute printf('autocmd BufWinEnter <buffer> call %sresume_highlight(%s)', s:SID, a:id)
-    execute printf('autocmd BufHidden <buffer> call %ssuspend_highlight(%s)', s:SID, a:id)
+    execute printf('autocmd BufEnter * call %sswitch_highlight(%s)', s:SID, a:id)
   augroup END
 endfunction
 "}}}
@@ -485,21 +484,17 @@ function! s:highlight_off_by_TextChanged(highlight) abort  "{{{
   return !a:highlight.is_text_identical()
 endfunction
 "}}}
-function! s:resume_highlight(id) abort "{{{
+function! s:switch_highlight(id) abort "{{{
   let highlight = highlightedyank#highlight#get(a:id)
   if highlight != {} && highlight.winid == win_getid()
-    call highlight.show()
+    if highlight.bufnr == bufnr('%')
+      call highlight.show()
+    else
+      call highlight.quench()
+    endif
   endif
 endfunction
 "}}}
-function! s:suspend_highlight(id) abort "{{{
-  let highlight = highlightedyank#highlight#get(a:id)
-  if highlight != {} && highlight.winid == win_getid()
-    call highlight.quench()
-  endif
-endfunction
-"}}}
-
 
 " vim:set foldmethod=marker:
 " vim:set commentstring="%s:
