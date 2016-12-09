@@ -465,6 +465,7 @@ function! s:set_autocmds(id) abort "{{{
     autocmd!
     execute printf('autocmd TextChanged <buffer> call %scancel_highlight(%s, "TextChanged")', s:SID, a:id)
     execute printf('autocmd InsertEnter <buffer> call %scancel_highlight(%s, "InsertEnter")', s:SID, a:id)
+    execute printf('autocmd BufUnload <buffer> call %scancel_highlight(%s, "BufUnload")', s:SID, a:id)
     execute printf('autocmd BufEnter * call %sswitch_highlight(%s)', s:SID, a:id)
   augroup END
 endfunction
@@ -482,6 +483,10 @@ endfunction
 "}}}
 function! s:highlight_off_by_TextChanged(highlight) abort  "{{{
   return !a:highlight.is_text_identical()
+endfunction
+"}}}
+function! s:highlight_off_by_BufUnload(highlight) abort  "{{{
+  return 1
 endfunction
 "}}}
 function! s:switch_highlight(id) abort "{{{
