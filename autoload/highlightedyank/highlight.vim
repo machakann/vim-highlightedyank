@@ -135,17 +135,10 @@ function! s:highlight.quench() dict abort "{{{
   return succeeded
 endfunction
 "}}}
-function! s:highlight.show_a_while(hi_group, time) dict abort  "{{{
-  if !self.show(a:hi_group)
-    return
-  endif
-  let id = self.quench_timer(a:time)
-  call s:set_autocmds(id)
-endfunction
-"}}}
 function! s:highlight.quench_timer(time) dict abort "{{{
   let id = timer_start(a:time, s:SID . 'scheduled_quench')
   let s:quench_table[id] = self
+  call s:set_autocmds(id)
   return id
 endfunction
 "}}}
@@ -500,10 +493,10 @@ endfunction
 function! s:set_autocmds(id) abort "{{{
   execute 'augroup highlightedyank-highlight-' . a:id
     autocmd!
-    execute printf('autocmd TextChanged <buffer> call %scancel_highlight(%s, "TextChanged")', s:SID, a:id)
-    execute printf('autocmd InsertEnter <buffer> call %scancel_highlight(%s, "InsertEnter")', s:SID, a:id)
-    execute printf('autocmd BufUnload <buffer> call %scancel_highlight(%s, "BufUnload")', s:SID, a:id)
-    execute printf('autocmd BufEnter * call %sswitch_highlight(%s)', s:SID, a:id)
+    execute printf('autocmd TextChanged <buffer> call s:cancel_highlight(%s, "TextChanged")', a:id)
+    execute printf('autocmd InsertEnter <buffer> call s:cancel_highlight(%s, "InsertEnter")', a:id)
+    execute printf('autocmd BufUnload <buffer> call s:cancel_highlight(%s, "BufUnload")', a:id)
+    execute printf('autocmd BufEnter * call s:switch_highlight(%s)', a:id)
   augroup END
 endfunction
 "}}}

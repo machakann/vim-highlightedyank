@@ -227,7 +227,9 @@ endfunction
 function! s:glow(highlight, hi_group, duration) abort "{{{
   " highlight off: limit the number of highlighting region to one explicitly
   call highlightedyank#highlight#cancel()
-  call a:highlight.show_a_while(a:hi_group, a:duration)
+  if a:highlight.show(a:hi_group)
+    call a:highlight.quench_timer(a:duration)
+  endif
   return ''
 endfunction
 "}}}
