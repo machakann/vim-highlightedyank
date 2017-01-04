@@ -57,9 +57,9 @@ function! s:yank_normal(count, register) abort "{{{
   let view = winsaveview()
   let options = s:shift_options()
   try
-    let [input, region, motionwise] = s:query(a:count)
-    if motionwise !=# ''
-      call s:highlight_yanked_region(region, motionwise)
+    let [input, region] = s:query(a:count)
+    if s:region != s:null_region
+      call s:highlight_yanked_region(region)
       let keyseq = printf('%s%s%s%s', a:register, a:count, s:normal['y'], input)
       call feedkeys(keyseq, 'it')
     endif
@@ -74,21 +74,23 @@ function! s:yank_visual(register) abort "{{{
   let region = deepcopy(s:null_region)
   let region.head = getpos("'<")
   let region.tail = getpos("'>")
-  if s:is_equal_or_ahead(region.tail, region.head)
-    let motionwise = visualmode()
-    if motionwise ==# "\<C-v>"
-      let region.blockwidth = s:is_extended() ? s:maxcol : virtcol(region.tail[1:2]) - virtcol(region.head[1:2]) + 1
-    endif
-    let options = s:shift_options()
-    try
-      call s:highlight_yanked_region(region, motionwise)
-      let keyseq = printf('%s%s%s', s:normal['gv'], a:register, s:normal['y'])
-      call feedkeys(keyseq, 'it')
-    finally
-      call winrestview(view)
-      call s:restore_options(options)
-    endtry
+  if s:is_ahead(region.head, region.tail)
+    return
   endif
+
+  let region.wise = s:visualmode2motionwise(visualmode())
+  if region.wise ==# 'block'
+    let region.blockwidth = s:is_extended() ? s:maxcol : virtcol(region.tail[1:2]) - virtcol(region.head[1:2]) + 1
+  endif
+  let options = s:shift_options()
+  try
+    call s:highlight_yanked_region(region)
+    let keyseq = printf('%s%s%s', s:normal['gv'], a:register, s:normal['y'])
+    call feedkeys(keyseq, 'it')
+  finally
+    call winrestview(view)
+    call s:restore_options(options)
+  endtry
 endfunction
 "}}}
 function! s:query(count) abort "{{{
@@ -112,8 +114,8 @@ function! s:query(count) abort "{{{
       endif
 
       let input .= c
-      let [region, motionwise] = s:get_region(curpos, a:count, input)
-      if motionwise !=# ''
+      let region = s:get_region(curpos, a:count, input)
+      if region != s:null_region
         call s:modify_region(region)
         break
       endif
@@ -122,7 +124,7 @@ function! s:query(count) abort "{{{
     call s:clear_dummy_cursor(dummycursor)
     call winrestview(view)
   endtry
-  return [input, region, motionwise]
+  return [input, region]
 endfunction
 "}}}
 function! s:get_region(curpos, count, input) abort  "{{{
@@ -146,7 +148,11 @@ function! s:get_region(curpos, count, input) abort  "{{{
   finally
     onoremap <Plug>(highlightedyank) y
     let &operatorfunc = opfunc
-    return [s:region, s:motionwise]
+    let region = copy(s:region)
+    if region != s:null_region
+      let region.wise = s:motionwise
+    endif
+    return region
   endtry
 endfunction
 "}}}
@@ -164,7 +170,7 @@ endfunction
 function! s:operator_get_region(motionwise) abort "{{{
   let head = getpos("'[")
   let tail = getpos("']")
-  if !s:is_equal_or_ahead(tail, head)
+  if s:is_ahead(head, tail)
     return
   endif
 
@@ -176,7 +182,7 @@ endfunction
 function! s:put_dummy_cursor(curpos) abort "{{{
   let dummycursor = highlightedyank#highlight#new()
   if hlexists('Cursor')
-    call dummycursor.order({'head': a:curpos, 'tail': a:curpos}, 'v')
+    call dummycursor.order({'head': a:curpos, 'tail': a:curpos, 'wise': 'char'})
     call dummycursor.show('Cursor')
     redraw
   endif
@@ -187,12 +193,12 @@ function! s:clear_dummy_cursor(dummycursor) abort  "{{{
   call a:dummycursor.quench()
 endfunction
 "}}}
-function! s:highlight_yanked_region(region, motionwise) abort "{{{
+function! s:highlight_yanked_region(region) abort "{{{
   let keyseq = ''
   let hi_group = 'HighlightedyankRegion'
   let hi_duration = s:get('highlight_duration', 1000)
   let highlight = highlightedyank#highlight#new()
-  call highlight.order(a:region, a:motionwise)
+  call highlight.order(a:region)
   if hi_duration < 0
     call s:persist(highlight, hi_group)
   elseif hi_duration > 0
@@ -289,8 +295,8 @@ function! s:get(name, default) abort  "{{{
   return get(b:, identifier, get(g:, identifier, a:default))
 endfunction
 "}}}
-function! s:is_equal_or_ahead(pos1, pos2) abort  "{{{
-  return a:pos1[1] > a:pos2[1] || (a:pos1[1] == a:pos2[1] && a:pos1[2] >= a:pos2[2])
+function! s:is_ahead(pos1, pos2) abort  "{{{
+  return a:pos1[1] > a:pos2[1] || (a:pos1[1] == a:pos2[1] && a:pos1[2] > a:pos2[2])
 endfunction
 "}}}
 function! s:escape(string) abort  "{{{
@@ -306,30 +312,39 @@ function! s:is_extended() abort "{{{
   return extended
 endfunction
 "}}}
+function! s:visualmode2motionwise(visualmode) abort "{{{
+  let motionwise = a:visualmode
+  if a:visualmode ==# 'v'
+    let motionwise = 'char'
+  elseif a:visualmode ==# 'V'
+    let motionwise = 'line'
+  elseif a:visualmode[0] ==# "\<C-v>"
+    let motionwise = 'block'
+  endif
+  return motionwise
+endfunction
+"}}}
 
 " for neovim
 function! highlightedyank#autocmd_highlight() abort "{{{
-  if v:event.operator !=# 'y'
+  if v:event.operator !=# 'y' || v:event.regtype ==# ''
     return
   endif
 
   let view = winsaveview()
-  let motionwise = v:event.regtype
-  let region = s:derive_region(motionwise, v:event.regcontents)
-  if motionwise !=# ''
-    call s:modify_region(region)
-    call s:highlight_yanked_region(region, motionwise)
-    call winrestview(view)
-  endif
+  let region = s:derive_region(v:event.regtype, v:event.regcontents)
+  call s:modify_region(region)
+  call s:highlight_yanked_region(region)
+  call winrestview(view)
 endfunction
 "}}}
-function! s:derive_region(motionwise, regcontents) abort "{{{
-  if a:motionwise ==# 'v'
+function! s:derive_region(regtype, regcontents) abort "{{{
+  if a:regtype ==# 'v'
     let region = s:derive_region_char(a:regcontents)
-  elseif a:motionwise ==# 'V'
+  elseif a:regtype ==# 'V'
     let region = s:derive_region_line(a:regcontents)
-  elseif a:motionwise[0] ==# "\<C-v>"
-    let width = str2nr(a:motionwise[1:])
+  elseif a:regtype[0] ==# "\<C-v>"
+    let width = str2nr(a:regtype[1:])
     let region = s:derive_region_block(a:regcontents, width)
   else
     let region = deepcopy(s:null_region)
@@ -340,6 +355,7 @@ endfunction
 function! s:derive_region_char(regcontents) abort "{{{
   let len = len(a:regcontents)
   let region = {}
+  let region.wise = 'char'
   let region.head = getpos("'[")
   let region.tail = copy(region.head)
   if len == 0
@@ -355,6 +371,7 @@ endfunction
 "}}}
 function! s:derive_region_line(regcontents) abort "{{{
   let region = {}
+  let region.wise = 'line'
   let region.head = getpos("'[")
   let region.tail = getpos("']")
   return region
@@ -363,9 +380,9 @@ endfunction
 function! s:derive_region_block(regcontents, width) abort "{{{
   let len = len(a:regcontents)
   let region = deepcopy(s:null_region)
-  let region.blockwidth = a:width
   if len > 0
     let curpos = getpos('.')
+    let region.wise = 'block'
     let region.head = getpos("'[")
     call setpos('.', region.head)
     if len > 1
@@ -373,6 +390,7 @@ function! s:derive_region_block(regcontents, width) abort "{{{
     endif
     execute printf('normal! %s|', virtcol('.') + a:width - 1)
     let region.tail = getpos('.')
+    let region.blockwidth = a:width
     if strdisplaywidth(getline('.')) < a:width
       let region.blockwidth = s:maxcol
     endif
