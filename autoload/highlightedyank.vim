@@ -309,7 +309,7 @@ endfunction
 
 " for neovim
 function! highlightedyank#autocmd_highlight() abort "{{{
-  if v:operator !~# '\%(y\|g@\)' || mode() ==# 'i'
+  if v:event.operator !=# 'y'
     return
   endif
 
