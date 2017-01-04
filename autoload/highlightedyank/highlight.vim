@@ -47,19 +47,19 @@ let s:highlight = {
       \   'winid': 0,
       \ }
 "}}}
-function! s:highlight.order(region, motionwise) dict abort  "{{{
-  if a:motionwise ==# 'char' || a:motionwise ==# 'v'
+function! s:highlight.order(region) dict abort  "{{{
+  if a:region.wise ==# 'char' || a:region.wise ==# 'v'
     let order_list = s:highlight_order_charwise(a:region)
-  elseif a:motionwise ==# 'line' || a:motionwise ==# 'V'
+  elseif a:region.wise ==# 'line' || a:region.wise ==# 'V'
     let order_list = s:highlight_order_linewise(a:region)
-  elseif a:motionwise ==# 'block' || a:motionwise[0] ==# "\<C-v>"
+  elseif a:region.wise ==# 'block' || a:region.wise[0] ==# "\<C-v>"
     let order_list = s:highlight_order_blockwise(a:region)
   else
     return
   endif
   let self.order_list += order_list
   let self.region = deepcopy(a:region)
-  let self.motionwise = a:motionwise
+  let self.motionwise = a:region.wise
 endfunction
 "}}}
 function! s:highlight.show(...) dict abort "{{{
