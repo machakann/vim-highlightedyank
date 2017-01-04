@@ -327,25 +327,24 @@ endfunction
 
 " for neovim
 function! highlightedyank#autocmd_highlight() abort "{{{
-  let view = winsaveview()
-  let motionwise = v:event.regtype
-  if motionwise ==# ''
+  if v:event.operator !=# 'y' || v:event.regtype ==# ''
     return
   endif
 
-  let region = s:derive_region(motionwise, v:event.regcontents)
+  let view = winsaveview()
+  let region = s:derive_region(v:event.regtype, v:event.regcontents)
   call s:modify_region(region)
   call s:highlight_yanked_region(region)
   call winrestview(view)
 endfunction
 "}}}
-function! s:derive_region(motionwise, regcontents) abort "{{{
-  if a:motionwise ==# 'v'
+function! s:derive_region(regtype, regcontents) abort "{{{
+  if a:regtype ==# 'v'
     let region = s:derive_region_char(a:regcontents)
-  elseif a:motionwise ==# 'V'
+  elseif a:regtype ==# 'V'
     let region = s:derive_region_line(a:regcontents)
-  elseif a:motionwise[0] ==# "\<C-v>"
-    let width = str2nr(a:motionwise[1:])
+  elseif a:regtype[0] ==# "\<C-v>"
+    let width = str2nr(a:regtype[1:])
     let region = s:derive_region_block(a:regcontents, width)
   else
     let region = deepcopy(s:null_region)
@@ -398,83 +397,6 @@ function! s:derive_region_block(regcontents, width) abort "{{{
     call setpos('.', curpos)
   endif
   return region
-endfunction
-"}}}
-function! s:check_region(region, regcontents) abort "{{{
-  if a:regin == s:null_region
-    return 0
-  endif
-
-  if a:region.wise ==# 'char'
-    return s:check_region_char(a:region, a:regcontents)
-  elseif a:region.wise ==# 'line'
-    return s:check_region_line(a:region, a:regcontents)
-  elseif a:region.wise ==# 'block'
-    return s:check_region_block(a:region, a:regcontents)
-  endif
-  return 0
-endfunction
-"}}}
-function! s:check_region_char(region, regcontents) abort "{{{
-  let textmatched = 1
-  for i in range(len(a:regcontents))
-    let yanked = a:regcontents[i]
-    let lnum = a:region.head[1] + i
-    if lnum == a:region.head[1]
-      let start = a:region.head[2] - 1
-    else
-      let start = 0
-    endif
-    if lnum == a:region.tail[1]
-      let end = a:region.tail[2] - 1
-    else
-      let end = col([lnum, '$']) - 1
-    endif
-    let buffer = getline(lnum)
-    let buffer = buffer ==# '' ? '' : buffer[start:end]
-    if buffer !=# yanked
-      let textmatched = 0
-      break
-    endif
-  endfor
-  return textmatched
-endfunction
-"}}}
-function! s:check_region_line(region, regcontents) abort "{{{
-  let textmatched = 1
-  for i in range(len(a:regcontents))
-    let yanked = a:regcontents[i]
-    let lnum = a:region.head[1] + i
-    let buffer = getline(lnum)
-    if buffer !=# yanked
-      let textmatched = 0
-      break
-    endif
-  endfor
-  return textmatched
-endfunction
-"}}}
-function! s:check_region_block(region, regcontents) abort "{{{
-  let curpos = getpos('.')
-  call setpos('.', a:region.head)
-  let setcol = printf('normal! %s|', virtcol('.'))
-  let textmatched = 1
-  for i in range(len(a:regcontents))
-    let yanked = a:regcontents[i]
-    let lnum = a:region.head[1] + i
-    call cursor(lnum, 1)
-    execute setcol
-    let col = col('.')
-    let len = strlen(yanked)
-    let buffer = getline(lnum)
-    let buffer = buffer ==# '' ? '' : buffer[col-1 : col+len-1]
-    if buffer !=# yanked
-      let textmatched = 0
-      break
-    endif
-  endfor
-  call setpos('.', curpos)
-  return textmatched
 endfunction
 "}}}
 
