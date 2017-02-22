@@ -58,7 +58,7 @@ function! s:yank_normal(count, register) abort "{{{
   let options = s:shift_options()
   try
     let [input, region] = s:query(a:count)
-    if s:region != s:null_region
+    if region != s:null_region
       call s:highlight_yanked_region(region)
       let keyseq = printf('%s%s%s%s', a:register, a:count, s:normal['y'], input)
       call feedkeys(keyseq, 'it')
