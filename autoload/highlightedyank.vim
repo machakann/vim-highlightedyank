@@ -5,7 +5,7 @@
 " variables "{{{
 " null valiables
 let s:null_pos = [0, 0, 0, 0]
-let s:null_region = {'head': copy(s:null_pos), 'tail': copy(s:null_pos), 'blockwidth': 0}
+let s:null_region = {'wise': '', 'head': copy(s:null_pos), 'tail': copy(s:null_pos), 'blockwidth': 0}
 
 " constants
 let s:maxcol = 2147483647
@@ -116,7 +116,6 @@ function! s:query(count) abort "{{{
       let input .= c
       let region = s:get_region(curpos, a:count, input)
       if region != s:null_region
-        call s:modify_region(region)
         break
       endif
     endwhile
@@ -129,7 +128,6 @@ endfunction
 "}}}
 function! s:get_region(curpos, count, input) abort  "{{{
   let s:region = deepcopy(s:null_region)
-  let s:motionwise = ''
   let opfunc = &operatorfunc
   let &operatorfunc = s:SID . 'operator_get_region'
   onoremap <Plug>(highlightedyank) g@
@@ -148,11 +146,10 @@ function! s:get_region(curpos, count, input) abort  "{{{
   finally
     onoremap <Plug>(highlightedyank) y
     let &operatorfunc = opfunc
-    let region = copy(s:region)
-    if region != s:null_region
-      let region.wise = s:motionwise
+    if s:region == s:null_region
+      return deepcopy(s:null_region)
     endif
-    return region
+    return s:modify_region(s:region)
   endtry
 endfunction
 "}}}
@@ -165,6 +162,7 @@ function! s:modify_region(region) abort "{{{
     let a:region.tail = getpos('.')
     call setpos('.', cursor)
   endif
+  return a:region
 endfunction
 "}}}
 function! s:operator_get_region(motionwise) abort "{{{
@@ -176,7 +174,7 @@ function! s:operator_get_region(motionwise) abort "{{{
 
   let s:region.head = head
   let s:region.tail = tail
-  let s:motionwise = a:motionwise
+  let s:region.wise = a:motionwise
 endfunction
 "}}}
 function! s:put_dummy_cursor(curpos) abort "{{{
