@@ -1,5 +1,5 @@
 " highlighted-yank: Make the yanked region apparent!
-" Last Change: 06-Nov-2016.
+" Last Change: 10-Mar-2017.
 " Maintainer : Masaaki Nakamura <mckn@outlook.com>
 
 " License    : NYSL
@@ -20,6 +20,10 @@ function! s:default_highlight() abort
   highlight default link HighlightedyankRegion IncSearch
 endfunction
 call s:default_highlight()
+augroup highlightedyank-event-ColorScheme
+  autocmd!
+  autocmd ColorScheme * call s:default_highlight()
+augroup END
 
 " intrinsic keymappings
 noremap <Plug>(highlightedyank-y) y
