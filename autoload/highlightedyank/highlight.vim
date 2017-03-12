@@ -418,19 +418,22 @@ function! s:get_buf_text(region, type) abort  "{{{
   let text = ''
   let visual = [getpos("'<"), getpos("'>")]
   let modified = [getpos("'["), getpos("']")]
-  let registers = s:saveregisters()
   let view = winsaveview()
+  let registers = []
   try
     call setpos('.', a:region.head)
     execute 'normal! ' . s:v(a:type)
     call setpos('.', a:region.tail)
     silent noautocmd normal! ""y
+    let registers = s:saveregisters()
     let text = @@
 
     " NOTE: This line is required to reset v:register.
     normal! :
   finally
-    call s:restoreregisters(registers)
+    if len(registers) > 0
+        call s:restoreregisters(registers)
+    endif
     call setpos("'<", visual[0])
     call setpos("'>", visual[1])
     call setpos("'[", modified[0])
