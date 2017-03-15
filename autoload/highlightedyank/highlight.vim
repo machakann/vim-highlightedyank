@@ -5,6 +5,8 @@
 let s:null_pos = [0, 0, 0, 0]
 
 " constants
+let s:on = 1
+let s:off = 0
 let s:maxcol = 2147483647
 
 " types
@@ -37,9 +39,9 @@ endfunction
 
 " s:highlight "{{{
 let s:highlight = {
-      \   'status': 0,
-      \   'group' : '',
-      \   'id'    : [],
+      \   'status': s:off,
+      \   'group': '',
+      \   'id': [],
       \   'order_list': [],
       \   'region': {},
       \   'motionwise': '',
@@ -63,12 +65,12 @@ function! s:highlight.order(region) dict abort  "{{{
 endfunction
 "}}}
 function! s:highlight.show(...) dict abort "{{{
-  if self.order_list == []
+  if empty(self.order_list)
     return 0
   endif
 
   if a:0 < 1
-    if self.group ==# ''
+    if empty(self.group)
       return 0
     else
       let hi_group = self.group
@@ -77,7 +79,7 @@ function! s:highlight.show(...) dict abort "{{{
     let hi_group = a:1
   endif
 
-  if self.status
+  if self.status is s:on
     if hi_group ==# self.group
       return 0
     else
@@ -89,7 +91,7 @@ function! s:highlight.show(...) dict abort "{{{
     let self.id += s:matchaddpos(hi_group, order)
   endfor
   call filter(self.id, 'v:val > 0')
-  let self.status = 1
+  let self.status = s:on
   let self.group = hi_group
   let self.bufnr = bufnr('%')
   let self.winid = win_getid()
@@ -98,7 +100,7 @@ function! s:highlight.show(...) dict abort "{{{
 endfunction
 "}}}
 function! s:highlight.quench() dict abort "{{{
-  if !self.status
+  if self.status is s:off
     return 0
   endif
 
@@ -113,7 +115,7 @@ function! s:highlight.quench() dict abort "{{{
       let s:paused += [self]
       augroup highlightedyank-pause-quenching
         autocmd!
-        autocmd CmdWinLeave * call s:exodus_from_cmdwindow()
+        autocmd CmdWinLeave * call s:got_out_of_cmdwindow()
       augroup END
       let succeeded = 0
     else
@@ -130,7 +132,7 @@ function! s:highlight.quench() dict abort "{{{
   endif
 
   if succeeded
-    let self.status = 0
+    let self.status = s:off
   endif
   return succeeded
 endfunction
@@ -205,7 +207,7 @@ function! s:quench_paused(...) abort "{{{
   augroup END
 endfunction
 "}}}
-function! s:exodus_from_cmdwindow() abort "{{{
+function! s:got_out_of_cmdwindow() abort "{{{
   augroup highlightedyank-pause-quenching
     autocmd!
     autocmd CursorMoved * call s:quench_paused()
