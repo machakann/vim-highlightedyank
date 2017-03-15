@@ -110,8 +110,8 @@ function! s:highlight.quench() dict abort "{{{
     let succeeded = 1
   else
     if s:is_in_cmdline_window()
-      let s:quenching_queue += [self]
-      augroup highlightedyank-quech-queue
+      let s:paused += [self]
+      augroup highlightedyank-pause-quenching
         autocmd!
         autocmd CmdWinLeave * call s:exodus_from_cmdwindow()
       augroup END
@@ -156,7 +156,6 @@ endfunction
 
 " for scheduled-quench "{{{
 let s:quench_table = {}
-let s:obsolete_augroup = []
 function! s:scheduled_quench(id) abort  "{{{
   let options = s:shift_options()
   try
@@ -169,7 +168,6 @@ function! s:scheduled_quench(id) abort  "{{{
     return 1
   finally
     unlet s:quench_table[a:id]
-    call s:metabolize_augroup(a:id)
     call timer_stop(a:id)
     call s:restore_options(options)
     redraw
@@ -192,44 +190,25 @@ function! highlightedyank#highlight#get(id) abort "{{{
   return get(s:quench_table, a:id, {})
 endfunction
 "}}}
-function! s:metabolize_augroup(id) abort  "{{{
-  " clean up autocommands in the current augroup
-  execute 'augroup highlightedyank-highlight-' . a:id
-    autocmd!
-  augroup END
-
-  " clean up obsolete augroup
-  call filter(s:obsolete_augroup, 'v:val != a:id')
-  for id in s:obsolete_augroup
-    execute 'augroup! highlightedyank-highlight-' . id
-  endfor
-  call filter(s:obsolete_augroup, 0)
-
-  " queue the current augroup
-  call add(s:obsolete_augroup, a:id)
-endfunction
-"}}}
-let s:quenching_queue = []
-function! s:quench_queued(...) abort "{{{
+let s:paused = []
+function! s:quench_paused(...) abort "{{{
   if s:is_in_cmdline_window()
     return
   endif
 
-  augroup highlightedyank-quech-queue
-    autocmd!
-  augroup END
-
-  let list = copy(s:quenching_queue)
-  let s:quenching_queue = []
-  for highlight in list
+  for highlight in s:paused
     call highlight.quench()
   endfor
+  let s:paused = []
+  augroup highlightedyank-pause-quenching
+    autocmd!
+  augroup END
 endfunction
 "}}}
 function! s:exodus_from_cmdwindow() abort "{{{
-  augroup highlightedyank-quech-queue
+  augroup highlightedyank-pause-quenching
     autocmd!
-    autocmd CursorMoved * call s:quench_queued()
+    autocmd CursorMoved * call s:quench_paused()
   augroup END
 endfunction
 "}}}
@@ -494,7 +473,7 @@ function! s:v(v) abort  "{{{
 endfunction
 "}}}
 function! s:set_autocmds(id) abort "{{{
-  execute 'augroup highlightedyank-highlight-' . a:id
+  augroup highlightedyank-highlight
     autocmd!
     execute printf('autocmd TextChanged <buffer> call s:cancel_highlight(%s, "TextChanged")', a:id)
     execute printf('autocmd InsertEnter <buffer> call s:cancel_highlight(%s, "InsertEnter")', a:id)
