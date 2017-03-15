@@ -42,6 +42,22 @@ function! highlightedyank#yank(mode) abort  "{{{
   endif
 endfunction
 "}}}
+function! highlightedyank#setoperatorfunc() abort "{{{
+  set operatorfunc=highlightedyank#operatorfunc
+  return ''
+endfunction
+"}}}
+function! highlightedyank#operatorfunc(motionwise, ...) abort "{{{
+  let region = {'head': getpos("'["), 'tail': getpos("']"), 'wise': a:motionwise}
+  if s:is_ahead(region.head, region.tail)
+    return
+  endif
+
+  let register = v:register ==# s:default_register() ? '' : '"' . v:register
+  execute printf('normal! `[%sy%s`]', register, s:motionwise2visualmode(a:motionwise))
+  call s:highlight_yanked_region(region)
+endfunction
+"}}}
 function! s:default_register() abort  "{{{
   if &clipboard =~# 'unnamedplus'
     let default_register = '+'
@@ -314,15 +330,29 @@ function! s:is_extended() abort "{{{
 endfunction
 "}}}
 function! s:visualmode2motionwise(visualmode) abort "{{{
-  let motionwise = a:visualmode
   if a:visualmode ==# 'v'
     let motionwise = 'char'
   elseif a:visualmode ==# 'V'
     let motionwise = 'line'
   elseif a:visualmode[0] ==# "\<C-v>"
     let motionwise = 'block'
+  else
+    let motionwise = a:visualmode
   endif
   return motionwise
+endfunction
+"}}}
+function! s:motionwise2visualmode(motionwise) abort "{{{
+  if a:motionwise ==# 'char'
+    let visualmode = 'v'
+  elseif a:motionwise ==# 'line'
+    let visualmode = 'V'
+  elseif a:motionwise[0] ==# 'block'
+    let visualmode = "\<C-v>"
+  else
+    let visualmode = a:motionwise
+  endif
+  return visualmode
 endfunction
 "}}}
 
