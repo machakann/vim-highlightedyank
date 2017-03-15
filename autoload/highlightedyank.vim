@@ -178,16 +178,20 @@ function! s:operator_get_region(motionwise) abort "{{{
 endfunction
 "}}}
 function! s:put_dummy_cursor(curpos) abort "{{{
-  if hlexists('Cursor')
-    let pos = {'head': a:curpos, 'tail': a:curpos, 'wise': 'char'}
-    let dummycursor = highlightedyank#highlight#new(pos)
-    call dummycursor.show('Cursor')
-    redraw
+  if !hlexists('Cursor')
+    return {}
   endif
+  let pos = {'head': a:curpos, 'tail': a:curpos, 'wise': 'char'}
+  let dummycursor = highlightedyank#highlight#new(pos)
+  call dummycursor.show('Cursor')
+  redraw
   return dummycursor
 endfunction
 "}}}
 function! s:clear_dummy_cursor(dummycursor) abort  "{{{
+  if empty(a:dummycursor)
+    return
+  endif
   call a:dummycursor.quench()
 endfunction
 "}}}

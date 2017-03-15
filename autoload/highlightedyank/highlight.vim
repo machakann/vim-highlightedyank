@@ -32,8 +32,17 @@ let s:SID = printf("\<SNR>%s_", s:SID())
 delfunction s:SID
 "}}}
 
-function! highlightedyank#highlight#new() abort  "{{{
-  return deepcopy(s:highlight)
+function! highlightedyank#highlight#new(region) abort  "{{{
+  let highlight = deepcopy(s:highlight)
+  let highlight.region = deepcopy(a:region)
+  if a:region.wise ==# 'char' || a:region.wise ==# 'v'
+    let highlight.order_list = s:highlight_order_charwise(a:region)
+  elseif a:region.wise ==# 'line' || a:region.wise ==# 'V'
+    let highlight.order_list = s:highlight_order_linewise(a:region)
+  elseif a:region.wise ==# 'block' || a:region.wise[0] ==# "\<C-v>"
+    let highlight.order_list = s:highlight_order_blockwise(a:region)
+  endif
+  return highlight
 endfunction
 "}}}
 
@@ -44,25 +53,9 @@ let s:highlight = {
       \   'id': [],
       \   'order_list': [],
       \   'region': {},
-      \   'motionwise': '',
       \   'bufnr': 0,
       \   'winid': 0,
       \ }
-"}}}
-function! s:highlight.order(region) dict abort  "{{{
-  if a:region.wise ==# 'char' || a:region.wise ==# 'v'
-    let order_list = s:highlight_order_charwise(a:region)
-  elseif a:region.wise ==# 'line' || a:region.wise ==# 'V'
-    let order_list = s:highlight_order_linewise(a:region)
-  elseif a:region.wise ==# 'block' || a:region.wise[0] ==# "\<C-v>"
-    let order_list = s:highlight_order_blockwise(a:region)
-  else
-    return
-  endif
-  let self.order_list += order_list
-  let self.region = deepcopy(a:region)
-  let self.motionwise = a:region.wise
-endfunction
 "}}}
 function! s:highlight.show(...) dict abort "{{{
   if empty(self.order_list)
@@ -95,7 +88,7 @@ function! s:highlight.show(...) dict abort "{{{
   let self.group = hi_group
   let self.bufnr = bufnr('%')
   let self.winid = win_getid()
-  let self.text  = s:get_buf_text(self.region, self.motionwise)
+  let self.text  = s:get_buf_text(self.region)
   return 1
 endfunction
 "}}}
@@ -152,7 +145,7 @@ function! s:highlight.persist() dict abort  "{{{
 endfunction
 "}}}
 function! s:highlight.is_text_identical() dict abort "{{{
-  return s:get_buf_text(self.region, self.motionwise) ==# self.text
+  return s:get_buf_text(self.region) ==# self.text
 endfunction
 "}}}
 
@@ -390,7 +383,7 @@ function! s:restore_options(options) abort "{{{
   endif
 endfunction
 "}}}
-function! s:get_buf_text(region, type) abort  "{{{
+function! s:get_buf_text(region) abort  "{{{
   " NOTE: Do *not* use operator+textobject in another textobject!
   "       For example, getting a text with the command is not appropriate.
   "         execute printf('normal! %s:call setpos(".", %s)%s""y', a:type, string(a:region.tail), "\<CR>")
@@ -403,7 +396,7 @@ function! s:get_buf_text(region, type) abort  "{{{
   let registers = []
   try
     call setpos('.', a:region.head)
-    execute 'normal! ' . s:v(a:type)
+    execute 'normal! ' . s:v(a:region.wise)
     call setpos('.', a:region.tail)
     silent noautocmd normal! ""y
     let registers = s:saveregisters()
