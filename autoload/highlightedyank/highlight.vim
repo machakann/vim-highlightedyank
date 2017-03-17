@@ -153,14 +153,13 @@ endfunction
 let s:quench_table = {}
 function! s:quench(id) abort  "{{{
   let options = s:shift_options()
+  let highlight = s:get(a:id)
   try
-    let highlight = s:get(a:id)
     if highlight != {}
       call highlight.quench()
     endif
   catch /^Vim\%((\a\+)\)\=:E523/
     " NOTE: TextYankPost event sets "textlock"
-    let highlight = s:get(a:id)
     if highlight != {}
       call highlight.quench_timer(50)
     endif
