@@ -1,5 +1,5 @@
 *highlightedyank.txt*	Make the yanked region apparent!
-						Last change:05-Nov-2016.
+						Last change:25-Mar-2017.
 
 Author  : machakann <mckn{at}outlook.jp>
 License : NYSL license
@@ -58,6 +58,11 @@ HighlightedyankRegion				*hl-HighlightedyankRegion*
 >
 	highlight link HighlightedyankRegion IncSearch
 <
+	If you want to asign the color directly, then:
+>
+	highlight HighlightedyankRegion ctermbg=237 guibg=#404040
+<
+	See |:highlight| help for more details.
 ==============================================================================
 KNOWN ISSUE				*highlightedyank-known-issue*
 

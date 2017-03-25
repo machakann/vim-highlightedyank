@@ -1,5 +1,5 @@
 *highlightedyank.txt*	ヤンクした場所をわかりやすくする。
-						Last change:05-Nov-2016.
+						Last change:25-Mar-2017.
 
 書いた人   : machakann <mckn{at}outlook.jp>
 ライセンス : NYSL ライセンス
@@ -53,6 +53,11 @@ HighlightedyankRegion				*hl-HighlightedyankRegion*
 >
 	highlight link HighlightedyankRegion IncSearch
 <
+	直接色を指定する場合は次のように書きます。
+>
+	highlight HighlightedyankRegion ctermbg=237 guibg=#404040
+<
+	より詳しくは |:highlight| を参照してください。
 ==============================================================================
 KNOWN ISSUE				*highlightedyank-known-issue*
 
