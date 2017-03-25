@@ -167,10 +167,10 @@ function! s:quench(id) abort  "{{{
   finally
     unlet s:quench_table[a:id]
     call timer_stop(a:id)
-    call s:clear_autocmds()
     call s:restore_options(options)
     redraw
   endtry
+  call s:clear_autocmds()
 endfunction
 "}}}
 function! highlightedyank#highlight#cancel(...) abort "{{{
