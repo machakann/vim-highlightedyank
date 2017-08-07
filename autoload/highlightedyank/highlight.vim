@@ -112,15 +112,16 @@ function! s:highlight.quench() dict abort "{{{
       augroup END
       let succeeded = 0
     else
-      if win_gotoid(self.winid)
+      noautocmd let reached = win_gotoid(self.winid)
+      if reached
         call map(self.id, 'matchdelete(v:val)')
         call filter(self.id, 'v:val > 0')
       else
         call filter(self.id, 0)
       endif
       let succeeded = 1
-      call win_gotoid(winid)
-      call winrestview(view)
+      noautocmd call win_gotoid(winid)
+      noautocmd call winrestview(view)
     endif
   endif
 
