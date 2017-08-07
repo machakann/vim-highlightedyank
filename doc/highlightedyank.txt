@@ -1,5 +1,5 @@
 *highlightedyank.txt*	Make the yanked region apparent!
-						Last change:25-Mar-2017.
+						Last change:07-Aug-2017.
 
 Author  : machakann <mckn{at}outlook.jp>
 License : NYSL license
@@ -16,7 +16,7 @@ INDEX					*highlightedyank-index*
 
 INTRODUCTION				|highlightedyank-introduction|
 HIGHLIGHT GROUPS			|highlightedyank-highlight-groups|
-KNOWN ISSUE				|highlightedyank-known-issue|
+KNOWN ISSUES				|highlightedyank-known-issues|
 
 ==============================================================================
 INTRODUCTION				*highlightedyank-introduction*
@@ -64,7 +64,7 @@ HighlightedyankRegion				*hl-HighlightedyankRegion*
 <
 	See |:highlight| help for more details.
 ==============================================================================
-KNOWN ISSUE				*highlightedyank-known-issue*
+KNOWN ISSUES				*highlightedyank-known-issues*
 
  - When 'clipboard' is set as "unnamed", `"*yiw` updates "0 |quote0|
    register.

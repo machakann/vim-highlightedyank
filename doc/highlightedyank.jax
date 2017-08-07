@@ -1,5 +1,5 @@
 *highlightedyank.txt*	ヤンクした場所をわかりやすくする。
-						Last change:25-Mar-2017.
+						Last change:07-Aug-2017.
 
 書いた人   : machakann <mckn{at}outlook.jp>
 ライセンス : NYSL ライセンス
@@ -16,6 +16,7 @@ INDEX					*highlightedyank-index*
 
 INTRODUCTION				|highlightedyank-introduction|
 HIGHLIGHT GROUPS			|highlightedyank-highlight-groups|
+KNOWN ISSUES				|highlightedyank-known-issues|
 
 ==============================================================================
 INTRODUCTION				*highlightedyank-introduction*
@@ -59,7 +60,7 @@ HighlightedyankRegion				*hl-HighlightedyankRegion*
 <
 	より詳しくは |:highlight| を参照してください。
 ==============================================================================
-KNOWN ISSUE				*highlightedyank-known-issue*
+KNOWN ISSUES				*highlightedyank-known-issues*
 
  - 'clipboard' に "unnamed" が設定されているとき `"*yiw` は "0 |quote0|
    レジスタを更新してしまいます。
