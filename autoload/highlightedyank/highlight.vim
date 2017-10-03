@@ -87,7 +87,7 @@ function! s:highlight.show(...) dict abort "{{{
   let self.status = s:on
   let self.group = hi_group
   let self.bufnr = bufnr('%')
-  let self.winid = win_getid()
+  let self.winid = s:win_getid()
   let self.text  = s:get_buf_text(self.region)
   return 1
 endfunction
@@ -97,9 +97,9 @@ function! s:highlight.quench() dict abort "{{{
     return 0
   endif
 
-  let winid = win_getid()
+  let winid = s:win_getid()
   let view = winsaveview()
-  if win_getid() == self.winid
+  if s:win_getid() == self.winid
     call map(self.id, 'matchdelete(v:val)')
     call filter(self.id, 'v:val > 0')
     let succeeded = 1
@@ -112,7 +112,7 @@ function! s:highlight.quench() dict abort "{{{
       augroup END
       let succeeded = 0
     else
-      noautocmd let reached = win_gotoid(self.winid)
+      let reached = s:win_gotoid(self.winid)
       if reached
         call map(self.id, 'matchdelete(v:val)')
         call filter(self.id, 'v:val > 0')
@@ -120,8 +120,8 @@ function! s:highlight.quench() dict abort "{{{
         call filter(self.id, 0)
       endif
       let succeeded = 1
-      noautocmd call win_gotoid(winid)
-      noautocmd call winrestview(view)
+      call s:win_gotoid(winid)
+      call winrestview(view)
     endif
   endif
 
@@ -262,7 +262,7 @@ endfunction
 "}}}
 function! s:switch_highlight(id) abort "{{{
   let highlight = s:get(a:id)
-  if highlight != {} && highlight.winid == win_getid()
+  if highlight != {} && highlight.winid == s:win_getid()
     if highlight.bufnr == bufnr('%')
       call highlight.show()
     else
@@ -515,6 +515,46 @@ function! s:v(v) abort  "{{{
   endif
   return v
 endfunction
+"}}}
+
+" for compatibility
+" function! s:win_getid(...) abort{{{
+if exists('*win_getid')
+  let s:win_getid = function('win_getid')
+else
+  function! s:win_getid(...) abort
+    let winnr = get(a:000, 0, winnr())
+    let tabnr = get(a:000, 1, tabpagenr())
+  endfunction
+endif
+"}}}
+" function! s:win_gotoid(id) abort{{{
+if exists('*win_gotoid')
+  function! s:win_gotoid(id) abort
+    noautocmd let ret = win_gotoid(a:id)
+    return ret
+  endfunction
+else
+  function! s:win_gotoid(id) abort
+    let [winnr, tabnr] = a:id
+
+    if tabnr != tabpagenr()
+      execute 'noautocmd tabnext ' . tabnr
+      if tabpagenr() != tabnr
+        return 0
+      endif
+    endif
+
+    try
+      if winnr != winnr()
+        execute printf('noautocmd %swincmd w', winnr)
+      endif
+    catch /^Vim\%((\a\+)\)\=:E16/
+      return 0
+    endtry
+    return 1
+  endfunction
+endif
 "}}}
 
 " vim:set foldmethod=marker:

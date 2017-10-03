@@ -1,5 +1,5 @@
 " highlighted-yank: Make the yanked region apparent!
-" Last Change: 16-Mar-2017.
+" Last Change: 03-Oct-2017.
 " Maintainer : Masaaki Nakamura <mckn@outlook.com>
 
 " License    : NYSL
@@ -47,8 +47,10 @@ if exists('##TextYankPost') && !hasmapto('<Plug>(highlightedyank)') && !exists('
     autocmd TextYankPost * silent call highlightedyank#autocmd_highlight()
   augroup END
 else
-  augroup highlightedyank-event-OptionSet
-    autocmd!
-    autocmd OptionSet cpoptions call s:keymap()
-  augroup END
+  if exists('##OptionSet')
+    augroup highlightedyank-event-OptionSet
+      autocmd!
+      autocmd OptionSet cpoptions call s:keymap()
+    augroup END
+  endif
 endif
