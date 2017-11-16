@@ -44,8 +44,7 @@ function! highlightedyank#highlight#new(region, ...) abort  "{{{
     let highlight.order_list = s:highlight_order_blockwise(a:region, timeout)
   endif
   return highlight
-endfunction
-"}}}
+endfunction "}}}
 
 " s:highlight "{{{
 let s:highlight = {
@@ -91,8 +90,7 @@ function! s:highlight.show(...) dict abort "{{{
   let self.winid = s:win_getid()
   let self.text  = s:get_buf_text(self.region)
   return 1
-endfunction
-"}}}
+endfunction "}}}
 function! s:highlight.quench() dict abort "{{{
   if self.status is s:off
     return 0
@@ -130,26 +128,22 @@ function! s:highlight.quench() dict abort "{{{
     let self.status = s:off
   endif
   return succeeded
-endfunction
-"}}}
+endfunction "}}}
 function! s:highlight.quench_timer(time) dict abort "{{{
   let id = timer_start(a:time, s:SID . 'quench')
   let s:quench_table[id] = self
   call s:set_autocmds(id)
   return id
-endfunction
-"}}}
+endfunction "}}}
 function! s:highlight.persist() dict abort  "{{{
   let id = s:get_pid()
   call s:set_autocmds(id)
   let s:quench_table[id] = self
   return id
-endfunction
-"}}}
+endfunction "}}}
 function! s:highlight.is_text_identical() dict abort "{{{
   return s:get_buf_text(self.region) ==# self.text
-endfunction
-"}}}
+endfunction "}}}
 function! s:highlight.empty() abort "{{{
   return empty(self.order_list)
 endfunction "}}}
@@ -176,8 +170,7 @@ function! s:quench(id) abort  "{{{
     redraw
   endtry
   call s:clear_autocmds()
-endfunction
-"}}}
+endfunction "}}}
 function! highlightedyank#highlight#cancel(...) abort "{{{
   if a:0 > 0
     let id_list = type(a:1) == s:type_list ? a:1 : a:000
@@ -188,12 +181,10 @@ function! highlightedyank#highlight#cancel(...) abort "{{{
   for id in id_list
     call s:quench(id)
   endfor
-endfunction
-"}}}
+endfunction "}}}
 function! s:get(id) abort "{{{
   return get(s:quench_table, a:id, {})
-endfunction
-"}}}
+endfunction "}}}
 let s:paused = []
 function! s:quench_paused(...) abort "{{{
   if s:is_in_cmdline_window()
@@ -207,15 +198,13 @@ function! s:quench_paused(...) abort "{{{
   augroup highlightedyank-pause-quenching
     autocmd!
   augroup END
-endfunction
-"}}}
+endfunction "}}}
 function! s:got_out_of_cmdwindow() abort "{{{
   augroup highlightedyank-pause-quenching
     autocmd!
     autocmd CursorMoved * call s:quench_paused()
   augroup END
-endfunction
-"}}}
+endfunction "}}}
 
 " ID for persistent highlights
 let s:pid = 0
@@ -226,8 +215,7 @@ function! s:get_pid() abort "{{{
     let s:pid = -1
   endif
   return s:pid
-endfunction
-"}}}
+endfunction "}}}
 
 function! s:set_autocmds(id) abort "{{{
   augroup highlightedyank-highlight
@@ -237,33 +225,27 @@ function! s:set_autocmds(id) abort "{{{
     execute printf('autocmd BufUnload <buffer> call s:cancel_highlight(%s, "BufUnload")', a:id)
     execute printf('autocmd BufEnter * call s:switch_highlight(%s)', a:id)
   augroup END
-endfunction
-"}}}
+endfunction "}}}
 function! s:clear_autocmds() abort "{{{
   augroup highlightedyank-highlight
     autocmd!
   augroup END
-endfunction
-"}}}
+endfunction "}}}
 function! s:cancel_highlight(id, event) abort  "{{{
   let highlight = s:get(a:id)
   if highlight != {} && s:highlight_off_by_{a:event}(highlight)
     call s:quench(a:id)
   endif
-endfunction
-"}}}
+endfunction "}}}
 function! s:highlight_off_by_InsertEnter(highlight) abort  "{{{
   return 1
-endfunction
-"}}}
+endfunction "}}}
 function! s:highlight_off_by_TextChanged(highlight) abort  "{{{
   return !a:highlight.is_text_identical()
-endfunction
-"}}}
+endfunction "}}}
 function! s:highlight_off_by_BufUnload(highlight) abort  "{{{
   return 1
-endfunction
-"}}}
+endfunction "}}}
 function! s:switch_highlight(id) abort "{{{
   let highlight = s:get(a:id)
   if highlight != {} && highlight.winid == s:win_getid()
@@ -273,8 +255,7 @@ function! s:switch_highlight(id) abort "{{{
       call highlight.quench()
     endif
   endif
-endfunction
-"}}}
+endfunction "}}}
 "}}}
 
 " private functions
@@ -318,8 +299,7 @@ function! s:highlight_order_charwise(region, timeout) abort  "{{{
     let order_list += [order]
   endif
   return order_list
-endfunction
-"}}}
+endfunction "}}}
 function! s:highlight_order_linewise(region, timeout) abort  "{{{
   let order = []
   let order_list = []
@@ -348,8 +328,7 @@ function! s:highlight_order_linewise(region, timeout) abort  "{{{
     let order_list += [order]
   endif
   return order_list
-endfunction
-"}}}
+endfunction "}}}
 function! s:highlight_order_blockwise(region, timeout) abort "{{{
   let view = winsaveview()
   let vcol_head = virtcol(a:region.head[1:2])
@@ -394,8 +373,7 @@ function! s:highlight_order_blockwise(region, timeout) abort "{{{
   endif
   call winrestview(view)
   return order_list
-endfunction
-"}}}
+endfunction "}}}
 " function! s:matchaddpos(group, pos) abort "{{{
 if s:has_patch_7_4_362
   function! s:matchaddpos(group, pos) abort
@@ -417,8 +395,7 @@ endif
 "}}}
 function! s:is_equal_or_ahead(pos1, pos2) abort  "{{{
   return a:pos1[1] > a:pos2[1] || (a:pos1[1] == a:pos2[1] && a:pos1[2] >= a:pos2[2])
-endfunction
-"}}}
+endfunction "}}}
 " function! s:is_in_cmdline_window() abort  "{{{
 if s:has_patch_7_4_392
   function! s:is_in_cmdline_window() abort
@@ -452,8 +429,7 @@ function! s:shift_options() abort "{{{
   endif
 
   return options
-endfunction
-"}}}
+endfunction "}}}
 function! s:restore_options(options) abort "{{{
   if s:has_gui_running
     set guicursor&
@@ -461,8 +437,7 @@ function! s:restore_options(options) abort "{{{
   else
     let &t_ve = a:options.cursor
   endif
-endfunction
-"}}}
+endfunction "}}}
 function! s:get_buf_text(region) abort  "{{{
   " NOTE: Do *not* use operator+textobject in another textobject!
   "       For example, getting a text with the command is not appropriate.
@@ -492,8 +467,7 @@ function! s:get_buf_text(region) abort  "{{{
     call winrestview(view)
     return text
   endtry
-endfunction
-"}}}
+endfunction "}}}
 function! s:saveregisters() abort "{{{
   let registers = {}
   let registers['0'] = s:getregister('0')
@@ -514,23 +488,19 @@ function! s:saveregisters() abort "{{{
     let registers['+'] = s:getregister('+')
   endif
   return registers
-endfunction
-"}}}
+endfunction "}}}
 function! s:restoreregisters(registers) abort "{{{
   for [register, contains] in items(a:registers)
     call s:setregister(register, contains)
   endfor
-endfunction
-"}}}
+endfunction "}}}
 function! s:getregister(register) abort "{{{
   return [getreg(a:register), getregtype(a:register)]
-endfunction
-"}}}
+endfunction "}}}
 function! s:setregister(register, contains) abort "{{{
   let [value, options] = a:contains
   return setreg(a:register, value, options)
-endfunction
-"}}}
+endfunction "}}}
 function! s:v(v) abort  "{{{
   if a:v ==# 'char'
     let v = 'v'
@@ -542,8 +512,7 @@ function! s:v(v) abort  "{{{
     let v = a:v
   endif
   return v
-endfunction
-"}}}
+endfunction "}}}
 function! s:echo_timeout() abort "{{{
   echohl WarningMsg
   echo 'highlightedyank: Too wide region is yanked. Give up highlighting.'
