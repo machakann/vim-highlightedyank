@@ -1,28 +1,10 @@
 " highlight object - managing highlight on a buffer
 
 " variables "{{{
-" null valiables
-let s:null_pos = [0, 0, 0, 0]
-
-" constants
-let s:on = 1
-let s:off = 0
-let s:maxcol = 2147483647
-
-" types
-let s:type_list = type([])
-
-" patchs
-if v:version > 704 || (v:version == 704 && has('patch237'))
-  let s:has_patch_7_4_362 = has('patch-7.4.362')
-  let s:has_patch_7_4_392 = has('patch-7.4.392')
-else
-  let s:has_patch_7_4_362 = v:version == 704 && has('patch362')
-  let s:has_patch_7_4_392 = v:version == 704 && has('patch392')
-endif
-
-" features
-let s:has_gui_running = has('gui_running')
+call highlightedyank#constant#import(s:,
+      \ ['NULLPOS', 'TYPELIST', 'MAXCOL', 'HAS_GUI_RUNNING'])
+let s:ON = 1
+let s:OFF = 0
 
 " SID
 function! s:SID() abort
@@ -48,7 +30,7 @@ endfunction "}}}
 
 " s:highlight "{{{
 let s:highlight = {
-      \   'status': s:off,
+      \   'status': s:OFF,
       \   'group': '',
       \   'id': [],
       \   'order_list': [],
@@ -72,7 +54,7 @@ function! s:highlight.show(...) dict abort "{{{
     let hi_group = a:1
   endif
 
-  if self.status is s:on
+  if self.status is s:ON
     if hi_group ==# self.group
       return 0
     else
@@ -84,7 +66,7 @@ function! s:highlight.show(...) dict abort "{{{
     let self.id += s:matchaddpos(hi_group, order)
   endfor
   call filter(self.id, 'v:val > 0')
-  let self.status = s:on
+  let self.status = s:ON
   let self.group = hi_group
   let self.bufnr = bufnr('%')
   let self.winid = s:win_getid()
@@ -92,7 +74,7 @@ function! s:highlight.show(...) dict abort "{{{
   return 1
 endfunction "}}}
 function! s:highlight.quench() dict abort "{{{
-  if self.status is s:off
+  if self.status is s:OFF
     return 0
   endif
 
@@ -125,7 +107,7 @@ function! s:highlight.quench() dict abort "{{{
   endif
 
   if succeeded
-    let self.status = s:off
+    let self.status = s:OFF
   endif
   return succeeded
 endfunction "}}}
@@ -173,7 +155,7 @@ function! s:quench(id) abort  "{{{
 endfunction "}}}
 function! highlightedyank#highlight#cancel(...) abort "{{{
   if a:0 > 0
-    let id_list = type(a:1) == s:type_list ? a:1 : a:000
+    let id_list = type(a:1) == s:TYPELIST ? a:1 : a:000
   else
     let id_list = map(keys(s:quench_table), 'str2nr(v:val)')
   endif
@@ -260,7 +242,7 @@ endfunction "}}}
 
 " private functions
 function! s:highlight_order_charwise(region, timeout) abort  "{{{
-  if a:region.head == s:null_pos || a:region.tail == s:null_pos || s:is_ahead(a:region.head, a:region.tail)
+  if a:region.head == s:NULLPOS || a:region.tail == s:NULLPOS || s:is_ahead(a:region.head, a:region.tail)
     return []
   endif
   if a:region.head[1] == a:region.tail[1]
@@ -302,7 +284,7 @@ function! s:highlight_order_charwise(region, timeout) abort  "{{{
   return order_list
 endfunction "}}}
 function! s:highlight_order_linewise(region, timeout) abort  "{{{
-  if a:region.head == s:null_pos || a:region.tail == s:null_pos || a:region.head[1] > a:region.tail[1]
+  if a:region.head == s:NULLPOS || a:region.tail == s:NULLPOS || a:region.head[1] > a:region.tail[1]
     return []
   endif
 
@@ -333,13 +315,13 @@ function! s:highlight_order_linewise(region, timeout) abort  "{{{
   return order_list
 endfunction "}}}
 function! s:highlight_order_blockwise(region, timeout) abort "{{{
-  if a:region.head == s:null_pos || a:region.tail == s:null_pos || s:is_ahead(a:region.head, a:region.tail)
+  if a:region.head == s:NULLPOS || a:region.tail == s:NULLPOS || s:is_ahead(a:region.head, a:region.tail)
     return []
   endif
 
   let view = winsaveview()
   let vcol_head = virtcol(a:region.head[1:2])
-  if a:region.blockwidth == s:maxcol
+  if a:region.blockwidth == s:MAXCOL
     let vcol_tail = a:region.blockwidth
   else
     let vcol_tail = vcol_head + a:region.blockwidth - 1
@@ -380,7 +362,7 @@ function! s:highlight_order_blockwise(region, timeout) abort "{{{
   return order_list
 endfunction "}}}
 " function! s:matchaddpos(group, pos) abort "{{{
-if s:has_patch_7_4_362
+if exists('*matchaddpos')
   function! s:matchaddpos(group, pos) abort
     return [matchaddpos(a:group, a:pos)]
   endfunction
@@ -402,7 +384,7 @@ function! s:is_ahead(pos1, pos2) abort  "{{{
   return a:pos1[1] > a:pos2[1] || (a:pos1[1] == a:pos2[1] && a:pos1[2] > a:pos2[2])
 endfunction "}}}
 " function! s:is_in_cmdline_window() abort  "{{{
-if s:has_patch_7_4_392
+if exists('*getcmdwintype')
   function! s:is_in_cmdline_window() abort
     return getcmdwintype() !=# ''
   endfunction
@@ -425,7 +407,7 @@ function! s:shift_options() abort "{{{
 
   """ tweak appearance
   " hide_cursor
-  if s:has_gui_running
+  if s:HAS_GUI_RUNNING
     let options.cursor = &guicursor
     set guicursor+=a:block-NONE
   else
@@ -436,7 +418,7 @@ function! s:shift_options() abort "{{{
   return options
 endfunction "}}}
 function! s:restore_options(options) abort "{{{
-  if s:has_gui_running
+  if s:HAS_GUI_RUNNING
     set guicursor&
     let &guicursor = a:options.cursor
   else
