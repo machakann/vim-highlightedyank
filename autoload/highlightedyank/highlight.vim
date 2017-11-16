@@ -32,15 +32,16 @@ let s:SID = printf("\<SNR>%s_", s:SID())
 delfunction s:SID
 "}}}
 
-function! highlightedyank#highlight#new(region) abort  "{{{
+function! highlightedyank#highlight#new(region, ...) abort  "{{{
+  let timeout = get(a:000, 0, 1/0)
   let highlight = deepcopy(s:highlight)
   let highlight.region = deepcopy(a:region)
   if a:region.wise ==# 'char' || a:region.wise ==# 'v'
-    let highlight.order_list = s:highlight_order_charwise(a:region)
+    let highlight.order_list = s:highlight_order_charwise(a:region, timeout)
   elseif a:region.wise ==# 'line' || a:region.wise ==# 'V'
-    let highlight.order_list = s:highlight_order_linewise(a:region)
+    let highlight.order_list = s:highlight_order_linewise(a:region, timeout)
   elseif a:region.wise ==# 'block' || a:region.wise[0] ==# "\<C-v>"
-    let highlight.order_list = s:highlight_order_blockwise(a:region)
+    let highlight.order_list = s:highlight_order_blockwise(a:region, timeout)
   endif
   return highlight
 endfunction
@@ -149,6 +150,9 @@ function! s:highlight.is_text_identical() dict abort "{{{
   return s:get_buf_text(self.region) ==# self.text
 endfunction
 "}}}
+function! s:highlight.empty() abort "{{{
+  return empty(self.order_list)
+endfunction "}}}
 
 " for scheduled-quench "{{{
 let s:quench_table = {}
@@ -274,10 +278,12 @@ endfunction
 "}}}
 
 " private functions
-function! s:highlight_order_charwise(region) abort  "{{{
+function! s:highlight_order_charwise(region, timeout) abort  "{{{
   let order = []
   let order_list = []
   let n = 0
+  let clock = highlightedyank#clock#new()
+  call clock.start()
   if a:region.head != s:null_pos && a:region.tail != s:null_pos && s:is_equal_or_ahead(a:region.tail, a:region.head)
     if a:region.head[1] == a:region.tail[1]
       let order += [a:region.head[1:2] + [a:region.tail[2] - a:region.head[2] + 1]]
@@ -299,6 +305,12 @@ function! s:highlight_order_charwise(region) abort  "{{{
         else
           let n += 1
         endif
+        if clock.started && clock.elapsed() > a:timeout
+          let order = []
+          let order_list = []
+          call s:echo_timeout()
+          break
+        endif
       endfor
     endif
   endif
@@ -308,10 +320,12 @@ function! s:highlight_order_charwise(region) abort  "{{{
   return order_list
 endfunction
 "}}}
-function! s:highlight_order_linewise(region) abort  "{{{
+function! s:highlight_order_linewise(region, timeout) abort  "{{{
   let order = []
   let order_list = []
   let n = 0
+  let clock = highlightedyank#clock#new()
+  call clock.start()
   if a:region.head != s:null_pos && a:region.tail != s:null_pos && a:region.head[1] <= a:region.tail[1]
     for lnum in range(a:region.head[1], a:region.tail[1])
       let order += [[lnum]]
@@ -322,6 +336,12 @@ function! s:highlight_order_linewise(region) abort  "{{{
       else
         let n += 1
       endif
+      if clock.started && clock.elapsed() > a:timeout
+        let order = []
+        let order_list = []
+        call s:echo_timeout()
+        break
+      endif
     endfor
   endif
   if order != []
@@ -330,7 +350,7 @@ function! s:highlight_order_linewise(region) abort  "{{{
   return order_list
 endfunction
 "}}}
-function! s:highlight_order_blockwise(region) abort "{{{
+function! s:highlight_order_blockwise(region, timeout) abort "{{{
   let view = winsaveview()
   let vcol_head = virtcol(a:region.head[1:2])
   if a:region.blockwidth == s:maxcol
@@ -341,6 +361,8 @@ function! s:highlight_order_blockwise(region) abort "{{{
   let order = []
   let order_list = []
   let n = 0
+  let clock = highlightedyank#clock#new()
+  call clock.start()
   if a:region.head != s:null_pos && a:region.tail != s:null_pos && s:is_equal_or_ahead(a:region.tail, a:region.head)
     for lnum in range(a:region.head[1], a:region.tail[1])
       call cursor(lnum, 1)
@@ -358,6 +380,12 @@ function! s:highlight_order_blockwise(region) abort "{{{
         let n = 0
       else
         let n += 1
+      endif
+      if clock.started && clock.elapsed() > a:timeout
+        let order = []
+        let order_list = []
+        call s:echo_timeout()
+        break
       endif
     endfor
   endif
@@ -516,6 +544,11 @@ function! s:v(v) abort  "{{{
   return v
 endfunction
 "}}}
+function! s:echo_timeout() abort "{{{
+  echohl WarningMsg
+  echo 'highlightedyank: Too wide region is yanked. Give up highlighting.'
+  echohl NONE
+endfunction "}}}
 
 " for compatibility
 " function! s:win_getid(...) abort{{{

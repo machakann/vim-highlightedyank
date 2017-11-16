@@ -215,7 +215,11 @@ function! s:highlight_yanked_region(region) abort "{{{
   let keyseq = ''
   let hi_group = 'HighlightedyankRegion'
   let hi_duration = s:get('highlight_duration', 1000)
-  let highlight = highlightedyank#highlight#new(a:region)
+  let timeout = s:get('timeout', 1000)
+  let highlight = highlightedyank#highlight#new(a:region, timeout)
+  if highlight.empty()
+    return
+  endif
   if hi_duration < 0
     call s:persist(highlight, hi_group)
   elseif hi_duration > 0
