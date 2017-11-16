@@ -14,11 +14,15 @@ let s:SID = printf("\<SNR>%s_", s:SID())
 delfunction s:SID
 
 " intrinsic keymap
+noremap <SID>(highlightedyank-y) y
+noremap <SID>(highlightedyank-doublequote) "
+noremap <SID>(highlightedyank-g@) g@
+noremap <SID>(highlightedyank-gv) gv
 let s:normal = {}
-let s:normal['y']  = "\<Plug>(highlightedyank-y)"
-let s:normal['"']  = "\<Plug>(highlightedyank-doublequote)"
-let s:normal['g@'] = "\<Plug>(highlightedyank-g@)"
-let s:normal['gv'] = "\<Plug>(highlightedyank-gv)"
+let s:normal['y']  = s:SID . '(highlightedyank-y)'
+let s:normal['"']  = s:SID . '(highlightedyank-doublequote)'
+let s:normal['g@'] = s:SID . '(highlightedyank-g@)'
+let s:normal['gv'] = s:SID . '(highlightedyank-gv)'
 "}}}
 
 function! highlightedyank#yank(mode) abort  "{{{

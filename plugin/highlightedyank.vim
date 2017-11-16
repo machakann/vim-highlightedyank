@@ -1,5 +1,5 @@
 " highlighted-yank: Make the yanked region apparent!
-" Last Change: 03-Oct-2017.
+" Last Change: 16-Nov-2017.
 " Maintainer : Masaaki Nakamura <mckn@outlook.com>
 
 " License    : NYSL
@@ -34,12 +34,6 @@ augroup highlightedyank-event-ColorScheme
   autocmd!
   autocmd ColorScheme * call s:default_highlight()
 augroup END
-
-" intrinsic keymappings
-noremap <Plug>(highlightedyank-y) y
-noremap <Plug>(highlightedyank-doublequote) "
-noremap <Plug>(highlightedyank-g@) g@
-noremap <Plug>(highlightedyank-gv) gv
 
 if exists('##TextYankPost') && !hasmapto('<Plug>(highlightedyank)') && !exists('g:highlightedyank_disable_autocmd')
   augroup highlightedyank
