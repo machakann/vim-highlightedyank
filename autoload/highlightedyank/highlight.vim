@@ -260,76 +260,83 @@ endfunction "}}}
 
 " private functions
 function! s:highlight_order_charwise(region, timeout) abort  "{{{
+  if a:region.head == s:null_pos || a:region.tail == s:null_pos || s:is_ahead(a:region.head, a:region.tail)
+    return []
+  endif
+  if a:region.head[1] == a:region.tail[1]
+    let order = [a:region.head[1:2] + [a:region.tail[2] - a:region.head[2] + 1]]
+    return [order]
+  endif
+
   let order = []
   let order_list = []
   let n = 0
   let clock = highlightedyank#clock#new()
   call clock.start()
-  if a:region.head != s:null_pos && a:region.tail != s:null_pos && s:is_equal_or_ahead(a:region.tail, a:region.head)
-    if a:region.head[1] == a:region.tail[1]
-      let order += [a:region.head[1:2] + [a:region.tail[2] - a:region.head[2] + 1]]
-      let n += 1
+  for lnum in range(a:region.head[1], a:region.tail[1])
+    if lnum == a:region.head[1]
+      let order += [a:region.head[1:2] + [col([a:region.head[1], '$']) - a:region.head[2] + 1]]
+    elseif lnum == a:region.tail[1]
+      let order += [[a:region.tail[1], 1] + [a:region.tail[2]]]
     else
-      for lnum in range(a:region.head[1], a:region.tail[1])
-        if lnum == a:region.head[1]
-          let order += [a:region.head[1:2] + [col([a:region.head[1], '$']) - a:region.head[2] + 1]]
-        elseif lnum == a:region.tail[1]
-          let order += [[a:region.tail[1], 1] + [a:region.tail[2]]]
-        else
-          let order += [[lnum]]
-        endif
-
-        if n == 7
-          let order_list += [order]
-          let order = []
-          let n = 0
-        else
-          let n += 1
-        endif
-        if clock.started && clock.elapsed() > a:timeout
-          let order = []
-          let order_list = []
-          call s:echo_timeout()
-          break
-        endif
-      endfor
+      let order += [[lnum]]
     endif
-  endif
+
+    if n == 7
+      let order_list += [order]
+      let order = []
+      let n = 0
+    else
+      let n += 1
+    endif
+    if clock.started && clock.elapsed() > a:timeout
+      let order = []
+      let order_list = []
+      call s:echo_timeout()
+      break
+    endif
+  endfor
   if order != []
     let order_list += [order]
   endif
   return order_list
 endfunction "}}}
 function! s:highlight_order_linewise(region, timeout) abort  "{{{
+  if a:region.head == s:null_pos || a:region.tail == s:null_pos || a:region.head[1] > a:region.tail[1]
+    return []
+  endif
+
   let order = []
   let order_list = []
   let n = 0
   let clock = highlightedyank#clock#new()
   call clock.start()
-  if a:region.head != s:null_pos && a:region.tail != s:null_pos && a:region.head[1] <= a:region.tail[1]
-    for lnum in range(a:region.head[1], a:region.tail[1])
-      let order += [[lnum]]
-      if n == 7
-        let order_list += [order]
-        let order = []
-        let n = 0
-      else
-        let n += 1
-      endif
-      if clock.started && clock.elapsed() > a:timeout
-        let order = []
-        let order_list = []
-        call s:echo_timeout()
-        break
-      endif
-    endfor
-  endif
+  for lnum in range(a:region.head[1], a:region.tail[1])
+    let order += [[lnum]]
+    if n == 7
+      let order_list += [order]
+      let order = []
+      let n = 0
+    else
+      let n += 1
+    endif
+    if clock.started && clock.elapsed() > a:timeout
+      let order = []
+      let order_list = []
+      call s:echo_timeout()
+      break
+    endif
+  endfor
   if order != []
     let order_list += [order]
   endif
   return order_list
 endfunction "}}}
 function! s:highlight_order_blockwise(region, timeout) abort "{{{
+  if a:region.head == s:null_pos || a:region.tail == s:null_pos || s:is_ahead(a:region.head, a:region.tail)
+    return []
+  endif
+
   let view = winsaveview()
   let vcol_head = virtcol(a:region.head[1:2])
   if a:region.blockwidth == s:maxcol
@@ -342,32 +349,30 @@ function! s:highlight_order_blockwise(region, timeout) abort "{{{
   let n = 0
   let clock = highlightedyank#clock#new()
   call clock.start()
-  if a:region.head != s:null_pos && a:region.tail != s:null_pos && s:is_equal_or_ahead(a:region.tail, a:region.head)
-    for lnum in range(a:region.head[1], a:region.tail[1])
-      call cursor(lnum, 1)
-      execute printf('normal! %s|', vcol_head)
-      let head = getpos('.')
-      execute printf('normal! %s|', vcol_tail)
-      let tail = getpos('.')
-      let col = head[2]
-      let len = tail[2] - head[2] + 1
-      let order += [[lnum, col, len]]
+  for lnum in range(a:region.head[1], a:region.tail[1])
+    call cursor(lnum, 1)
+    execute printf('normal! %s|', vcol_head)
+    let head = getpos('.')
+    execute printf('normal! %s|', vcol_tail)
+    let tail = getpos('.')
+    let col = head[2]
+    let len = tail[2] - head[2] + 1
+    let order += [[lnum, col, len]]
 
-      if n == 7
-        let order_list += [order]
-        let order = []
-        let n = 0
-      else
-        let n += 1
-      endif
-      if clock.started && clock.elapsed() > a:timeout
-        let order = []
-        let order_list = []
-        call s:echo_timeout()
-        break
-      endif
-    endfor
-  endif
+    if n == 7
+      let order_list += [order]
+      let order = []
+      let n = 0
+    else
+      let n += 1
+    endif
+    if clock.started && clock.elapsed() > a:timeout
+      let order = []
+      let order_list = []
+      call s:echo_timeout()
+      break
+    endif
+  endfor
   if order != []
     let order_list += [order]
   endif
@@ -393,8 +398,8 @@ else
   endfunction
 endif
 "}}}
-function! s:is_equal_or_ahead(pos1, pos2) abort  "{{{
-  return a:pos1[1] > a:pos2[1] || (a:pos1[1] == a:pos2[1] && a:pos1[2] >= a:pos2[2])
+function! s:is_ahead(pos1, pos2) abort  "{{{
+  return a:pos1[1] > a:pos2[1] || (a:pos1[1] == a:pos2[1] && a:pos1[2] > a:pos2[2])
 endfunction "}}}
 " function! s:is_in_cmdline_window() abort  "{{{
 if s:has_patch_7_4_392
