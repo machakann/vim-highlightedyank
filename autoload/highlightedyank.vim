@@ -193,6 +193,11 @@ function! s:clear_dummy_cursor(dummycursor) abort  "{{{
   call a:dummycursor.quench()
 endfunction "}}}
 function! s:highlight_yanked_region(region) abort "{{{
+  let maxlinenumber = s:get('max_lines', 10000)
+  if a:region.tail[1] - a:region.head[1] + 1 > maxlinenumber
+    return
+  endif
+
   let keyseq = ''
   let hi_group = 'HighlightedyankRegion'
   let hi_duration = s:get('highlight_duration', 1000)
