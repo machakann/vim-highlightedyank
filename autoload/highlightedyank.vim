@@ -333,14 +333,23 @@ function! s:motionwise2visualmode(motionwise) abort "{{{
   return visualmode
 endfunction "}}}
 
-" for neovim
+" for TextYankPost event
 function! highlightedyank#autocmd_highlight() abort "{{{
-  if v:event.operator !=# 'y' || v:event.regtype ==# ''
+  if exists('v:event')
+    let operator = v:event.operator
+    let regtype = v:event.regtype
+    let regcontents = v:event.regcontents
+  else
+    let operator = v:operator
+    let regtype = getregtype()
+    let regcontents = getreg(v:register, 1, 1)
+  endif
+  if operator !=# 'y' || regtype ==# ''
     return
   endif
 
   let view = winsaveview()
-  let region = s:derive_region(v:event.regtype, v:event.regcontents)
+  let region = s:derive_region(regtype, regcontents)
   call s:modify_region(region)
   call s:highlight_yanked_region(region)
   call winrestview(view)
