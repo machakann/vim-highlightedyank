@@ -274,7 +274,6 @@ function! s:highlight_order_charwise(region, timeout) abort  "{{{
     if clock.started && clock.elapsed() > a:timeout
       let order = []
       let order_list = []
-      call s:echo_timeout()
       break
     endif
   endfor
@@ -305,7 +304,6 @@ function! s:highlight_order_linewise(region, timeout) abort  "{{{
     if clock.started && clock.elapsed() > a:timeout
       let order = []
       let order_list = []
-      call s:echo_timeout()
       break
     endif
   endfor
@@ -351,7 +349,6 @@ function! s:highlight_order_blockwise(region, timeout) abort "{{{
     if clock.started && clock.elapsed() > a:timeout
       let order = []
       let order_list = []
-      call s:echo_timeout()
       break
     endif
   endfor
@@ -499,11 +496,6 @@ function! s:v(v) abort  "{{{
     let v = a:v
   endif
   return v
-endfunction "}}}
-function! s:echo_timeout() abort "{{{
-  echohl WarningMsg
-  echo 'highlightedyank: Too wide region is yanked. Give up highlighting.'
-  echohl NONE
 endfunction "}}}
 
 " for compatibility
