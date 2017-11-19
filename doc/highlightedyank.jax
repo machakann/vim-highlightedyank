@@ -1,5 +1,5 @@
 *highlightedyank.txt*	ヤンクした場所をわかりやすくする。
-						Last change:18-Nov-2017.
+						Last change:19-Nov-2017.
 
 書いた人   : machakann <mckn{at}outlook.jp>
 ライセンス : NYSL ライセンス
@@ -61,6 +61,8 @@ INTRODUCTION				*highlightedyank-introduction*
 
 
 
+					*g:highlightedyank_timeout*
+					*b:highlightedyank_timeout*
 |g:highlightedyank_timeout| と |b:highlightedyank_timeout| を使い、ハイライト
 に指定された以上の時間がかかった場合、処理を中止させることができます。以下の例
 ではハイライトに 500 ミリ秒 = 0.5 秒以上かかった場合に処理を中止させます。
