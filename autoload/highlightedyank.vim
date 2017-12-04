@@ -251,7 +251,6 @@ function! s:persist(highlight, hi_group) abort  "{{{
   if a:highlight.show(a:hi_group)
     call a:highlight.persist()
   endif
-  return ''
 endfunction "}}}
 function! s:blink(highlight, hi_group, duration) abort "{{{
   let key = ''
@@ -267,7 +266,6 @@ function! s:glow(highlight, hi_group, duration) abort "{{{
   if a:highlight.show(a:hi_group)
     call a:highlight.quench_timer(a:duration)
   endif
-  return ''
 endfunction "}}}
 function! s:wait_for_input(highlight, duration) abort  "{{{
   let clock = highlightedyank#clock#new()

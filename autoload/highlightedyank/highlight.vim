@@ -70,7 +70,6 @@ function! s:highlight.show(...) dict abort "{{{
   let self.group = hi_group
   let self.bufnr = bufnr('%')
   let self.winid = s:win_getid()
-  let self.text  = s:get_buf_text(self.region)
   return 1
 endfunction "}}}
 function! s:highlight.quench() dict abort "{{{
@@ -122,9 +121,6 @@ function! s:highlight.persist() dict abort  "{{{
   call s:set_autocmds(id)
   let s:quench_table[id] = self
   return id
-endfunction "}}}
-function! s:highlight.is_text_identical() dict abort "{{{
-  return s:get_buf_text(self.region) ==# self.text
 endfunction "}}}
 function! s:highlight.empty() abort "{{{
   return empty(self.order_list)
@@ -215,18 +211,9 @@ function! s:clear_autocmds() abort "{{{
 endfunction "}}}
 function! s:cancel_highlight(id, event) abort  "{{{
   let highlight = s:get(a:id)
-  if highlight != {} && s:highlight_off_by_{a:event}(highlight)
+  if highlight != {}
     call s:quench(a:id)
   endif
-endfunction "}}}
-function! s:highlight_off_by_InsertEnter(highlight) abort  "{{{
-  return 1
-endfunction "}}}
-function! s:highlight_off_by_TextChanged(highlight) abort  "{{{
-  return !a:highlight.is_text_identical()
-endfunction "}}}
-function! s:highlight_off_by_BufUnload(highlight) abort  "{{{
-  return 1
 endfunction "}}}
 function! s:switch_highlight(id) abort "{{{
   let highlight = s:get(a:id)
@@ -421,81 +408,6 @@ function! s:restore_options(options) abort "{{{
   else
     let &t_ve = a:options.cursor
   endif
-endfunction "}}}
-function! s:get_buf_text(region) abort  "{{{
-  " NOTE: Do *not* use operator+textobject in another textobject!
-  "       For example, getting a text with the command is not appropriate.
-  "         execute printf('normal! %s:call setpos(".", %s)%s""y', a:type, string(a:region.tail), "\<CR>")
-  "       Because it causes confusions for the unit of dot-repeating.
-  "       Use visual selection+operator as following.
-  let text = ''
-  let visual = [getpos("'<"), getpos("'>")]
-  let modified = [getpos("'["), getpos("']")]
-  let view = winsaveview()
-  let registers = s:saveregisters()
-  try
-    call setpos('.', a:region.head)
-    execute 'normal! ' . s:v(a:region.wise)
-    call setpos('.', a:region.tail)
-    silent noautocmd normal! ""y
-    let text = @@
-
-    " NOTE: This line is required to reset v:register.
-    normal! :
-  finally
-    call s:restoreregisters(registers)
-    call setpos("'<", visual[0])
-    call setpos("'>", visual[1])
-    call setpos("'[", modified[0])
-    call setpos("']", modified[1])
-    call winrestview(view)
-    return text
-  endtry
-endfunction "}}}
-function! s:saveregisters() abort "{{{
-  let registers = {}
-  let registers['0'] = s:getregister('0')
-  let registers['1'] = s:getregister('1')
-  let registers['2'] = s:getregister('2')
-  let registers['3'] = s:getregister('3')
-  let registers['4'] = s:getregister('4')
-  let registers['5'] = s:getregister('5')
-  let registers['6'] = s:getregister('6')
-  let registers['7'] = s:getregister('7')
-  let registers['8'] = s:getregister('8')
-  let registers['9'] = s:getregister('9')
-  let registers['"'] = s:getregister('"')
-  if &clipboard =~# 'unnamed'
-    let registers['*'] = s:getregister('*')
-  endif
-  if &clipboard =~# 'unnamedplus'
-    let registers['+'] = s:getregister('+')
-  endif
-  return registers
-endfunction "}}}
-function! s:restoreregisters(registers) abort "{{{
-  for [register, contains] in items(a:registers)
-    call s:setregister(register, contains)
-  endfor
-endfunction "}}}
-function! s:getregister(register) abort "{{{
-  return [getreg(a:register), getregtype(a:register)]
-endfunction "}}}
-function! s:setregister(register, contains) abort "{{{
-  let [value, options] = a:contains
-  return setreg(a:register, value, options)
-endfunction "}}}
-function! s:v(v) abort  "{{{
-  if a:v ==# 'char'
-    let v = 'v'
-  elseif a:v ==# 'line'
-    let v = 'V'
-  elseif a:v ==# 'block'
-    let v = "\<C-v>"
-  else
-    let v = a:v
-  endif
-  return v
 endfunction "}}}
 
 " for compatibility
