@@ -94,7 +94,7 @@ function! s:yank_normal(count, register) abort "{{{
       call s:highlight_yanked_region(region)
       call winrestview(view)
       let keyseq = printf('%s%s%s%s', a:register, a:count, s:normal['y'], input)
-      call feedkeys(keyseq, 'itx')
+      execute 'normal' keyseq
     endif
   finally
     call s:restore_options(options)
@@ -118,7 +118,7 @@ function! s:yank_visual(register) abort "{{{
     call s:highlight_yanked_region(region)
     call winrestview(view)
     let keyseq = printf('%s%s%s', s:normal['gv'], a:register, s:normal['y'])
-    call feedkeys(keyseq, 'itx')
+    execute 'normal' keyseq
   finally
     call s:restore_options(options)
   endtry
