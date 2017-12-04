@@ -1,5 +1,5 @@
 *highlightedyank.txt*	ヤンクした場所をわかりやすくする。
-						Last change:19-Nov-2017.
+						Last change:04-Dec-2017.
 
 書いた人   : machakann <mckn{at}outlook.jp>
 ライセンス : NYSL ライセンス
@@ -88,6 +88,23 @@ HighlightedyankRegion				*hl-HighlightedyankRegion*
 	highlight HighlightedyankRegion ctermbg=237 guibg=#404040
 <
 	より詳しくは |:highlight| を参照してください。
+==============================================================================
+COMMANDS				*highlightedyank-commands*
+
+:HighlightedyankOff				*:HighlightedyankOff*
+	ハイライト機能を一時停止します。ハイライトは比較的重い処理です。そのた
+	め、 |complex-repeat| を使用して大量のテキストを編集する場合などに使用
+	することで処理時間を短縮できるでしょう。
+
+:HighlightedyankOn				*:HighlightedyankOn*
+	|:HighlightedyankOff| コマンドによって停止していたハイライト機能を再開
+	します。
+
+:HighlightedyankToggle				*:HighlightedyankToggle*
+	ハイライト機能のオン・オフを切り替えます。
+	|:HighlightedyankOff| および |:HighlightedyankOn| の項も参照してくださ
+	い。
+
 ==============================================================================
 KNOWN ISSUES				*highlightedyank-known-issues*
 

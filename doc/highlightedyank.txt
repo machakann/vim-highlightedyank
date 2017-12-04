@@ -1,5 +1,5 @@
 *highlightedyank.txt*	Make the yanked region apparent!
-						Last change:19-Nov-2017.
+						Last change:04-Dec-2017.
 
 Author  : machakann <mckn{at}outlook.jp>
 License : NYSL license
@@ -16,6 +16,7 @@ INDEX					*highlightedyank-index*
 
 INTRODUCTION				|highlightedyank-introduction|
 HIGHLIGHT GROUPS			|highlightedyank-highlight-groups|
+COMMANDS				|highlightedyank-commands|
 KNOWN ISSUES				|highlightedyank-known-issues|
 
 ==============================================================================
@@ -80,7 +81,6 @@ HIGHLIGHT GROUPS			*highlightedyank-highlight-groups*
 If you want to change the highlighting color, re-define the following
 highlight group.
 
-HighlightedyankRegion				*hl-HighlightedyankRegion*
 	The highlight group is to define the highlight for yanked region.
 	It is linked to a highlight group IncSearch |hl-IncSearch| in default.
 >
@@ -91,6 +91,21 @@ HighlightedyankRegion				*hl-HighlightedyankRegion*
 	highlight HighlightedyankRegion ctermbg=237 guibg=#404040
 <
 	See |:highlight| help for more details.
+==============================================================================
+COMMANDS				*highlightedyank-commands*
+
+:HighlightedyankOff				*:HighlightedyankOff*
+	This command stops highlighting temporarily. The highlight is a
+	relatively heavy process. Thus it may reduce processing time when
+	using |complex-repeat| to edit a lot of strings in a buffer.
+
+:HighlightedyankOn				*:HighlightedyankOn*
+	This command (re)starts highlighting stopped by |:HighlightedyankOff|.
+
+:HighlightedyankToggle				*:HighlightedyankToggle*
+	This command toggles on/off of highlighting feature.
+	See |:HighlightedyankOff| and |:HighlightedyankOn| also.
+
 ==============================================================================
 KNOWN ISSUES				*highlightedyank-known-issues*
 

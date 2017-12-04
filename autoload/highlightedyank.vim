@@ -5,6 +5,9 @@
 " variables "{{{
 call highlightedyank#constant#import(s:,
       \ ['NULLREGION', 'MAXCOL', 'TYPENUM', 'HAS_TIMERS', 'HAS_GUI_RUNNING'])
+let s:ON = 1
+let s:OFF = 0
+let s:STATE = s:ON
 
 " SID
 function! s:SID() abort
@@ -47,6 +50,30 @@ function! highlightedyank#operatorfunc(motionwise, ...) abort "{{{
   let register = v:register ==# s:default_register() ? '' : '"' . v:register
   execute printf('normal! `[%sy%s`]', register, s:motionwise2visualmode(a:motionwise))
   call s:highlight_yanked_region(region)
+endfunction "}}}
+function! highlightedyank#on() abort "{{{
+  let s:STATE = s:ON
+  if stridx(&cpoptions, 'y') < 0
+    nnoremap <silent> <Plug>(highlightedyank) :<C-u>call highlightedyank#yank('n')<CR>
+    xnoremap <silent> <Plug>(highlightedyank) :<C-u>call highlightedyank#yank('x')<CR>
+    onoremap          <Plug>(highlightedyank) y
+  else
+    noremap  <expr>   <Plug>(highlightedyank-setoperatorfunc) highlightedyank#setoperatorfunc()
+    nmap     <silent> <Plug>(highlightedyank) <Plug>(highlightedyank-setoperatorfunc)<Plug>(highlightedyank-g@)
+    xmap     <silent> <Plug>(highlightedyank) <Plug>(highlightedyank-setoperatorfunc)<Plug>(highlightedyank-g@)
+    onoremap          <Plug>(highlightedyank) g@
+  endif
+endfunction "}}}
+function! highlightedyank#off() abort "{{{
+  let s:STATE = s:OFF
+  noremap <silent> <Plug>(highlightedyank) y
+endfunction "}}}
+function! highlightedyank#toggle() abort "{{{
+  if s:STATE is s:ON
+    call highlightedyank#off()
+  else
+    call highlightedyank#on()
+  endif
 endfunction "}}}
 function! s:default_register() abort  "{{{
   if &clipboard =~# 'unnamedplus'
@@ -335,6 +362,9 @@ endfunction "}}}
 
 " for TextYankPost event
 function! highlightedyank#autocmd_highlight() abort "{{{
+  if s:STATE is s:OFF
+    return
+  endif
   if exists('v:event')
     let operator = v:event.operator
     let regtype = v:event.regtype
