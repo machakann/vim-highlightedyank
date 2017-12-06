@@ -129,11 +129,14 @@ function! s:query(count) abort "{{{
   let input = ''
   let region = deepcopy(s:NULLREGION)
   let motionwise = ''
-  let dummycursor = s:put_dummy_cursor(curpos)
+  let dummycursor = {}
   try
     while 1
       let c = getchar(0)
       if empty(c)
+        if empty(dummycursor)
+          let dummycursor = s:put_dummy_cursor(curpos)
+        endif
         sleep 20m
         continue
       endif
