@@ -3,16 +3,16 @@ Make the yanked region apparent!
 
 ## Usage
 
-### If you are using Vim,
+### If you are using Neovim or Vim 8.0.1394 (or later version),
+there is no need for configuration, as the highlight event is automatically triggered by the TextYankPost event.
+
+### If you are using older Vim,
 
 add the line into your vimrc.
 
 ```vim
 map y <Plug>(highlightedyank)
 ```
-
-### If you are using Neovim,
-there is no need for configuration, as the highlight event is automatically triggered by the TextYankPost event.
 
 ## Optimizing highlight duration
 
