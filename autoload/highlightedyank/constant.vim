@@ -1,14 +1,6 @@
 " constant object - holding constants
 
-function! highlightedyank#constant#import(...) abort "{{{
-  if a:0 >= 1
-    let const = s:const
-    if a:0 >= 2
-      let const = filter(deepcopy(s:const), 'count(a:2, v:key) > 0')
-      lockvar! const
-    endif
-    call extend(a:1, const)
-  endif
+function! highlightedyank#constant#import() abort "{{{
   return s:const
 endfunction "}}}
 
@@ -17,24 +9,29 @@ let s:const = {}
 let s:const.NULLPOS = [0, 0, 0, 0]
 let s:const.NULLREGION = {'wise': '', 'head': copy(s:const.NULLPOS), 'tail': copy(s:const.NULLPOS), 'blockwidth': 0}
 let s:const.MAXCOL = 2147483647
-let s:const.HAS_GUI_RUNNING = has('gui_running')
-let s:const.HAS_TIMERS = has('timers')
 
+let s:Feature = {}
+let s:Feature.GUI_RUNNING = has('gui_running')
+let s:Feature.TIMERS = has('timers')
+let s:const.Feature = s:Feature
+
+let s:Type = {}
 if exists('v:t_number')
-  let s:const.TYPESTR = v:t_string
-  let s:const.TYPENUM = v:t_number
-  let s:const.TYPELIST = v:t_list
-  let s:const.TYPEDICT = v:t_dict
-  let s:const.TYPEFLOAT = v:t_float
-  let s:const.TYPEFUNC = v:t_func
+  let s:Type.STR = v:t_string
+  let s:Type.NUM = v:t_number
+  let s:Type.LIST = v:t_list
+  let s:Type.DICT = v:t_dict
+  let s:Type.FLOAT = v:t_float
+  let s:Type.FUNC = v:t_func
 else
-  let s:const.TYPESTR = type('')
-  let s:const.TYPENUM = type(0)
-  let s:const.TYPELIST = type([])
-  let s:const.TYPEDICT = type({})
-  let s:const.TYPEFLOAT = type(0.0)
-  let s:const.TYPEFUNC = type(function('tr'))
+  let s:Type.STR = type('')
+  let s:Type.NUM = type(0)
+  let s:Type.LIST = type([])
+  let s:Type.DICT = type({})
+  let s:Type.FLOAT = type(0.0)
+  let s:Type.FUNC = type(function('tr'))
 endif
+let s:const.Type = s:Type
 lockvar! s:const
 
 " vim:set foldmethod=marker:

@@ -1,8 +1,9 @@
 " highlight object - managing highlight on a buffer
-
-" variables "{{{
-call highlightedyank#constant#import(s:,
-      \ ['NULLPOS', 'TYPELIST', 'MAXCOL', 'HAS_GUI_RUNNING'])
+let s:Const = highlightedyank#constant#import()
+let s:Feature = s:Const.Feature
+let s:Type = s:Const.Type
+let s:NULLPOS = s:Const.NULLPOS
+let s:MAXCOL = s:Const.MAXCOL
 let s:ON = 1
 let s:OFF = 0
 
@@ -12,12 +13,10 @@ function! s:SID() abort
 endfunction
 let s:SID = printf("\<SNR>%s_", s:SID())
 delfunction s:SID
-"}}}
 
 function! highlightedyank#highlight#new(region, ...) abort  "{{{
   let timeout = get(a:000, 0, 1/0)
   let highlight = deepcopy(s:highlight)
-  let highlight.region = deepcopy(a:region)
   if a:region.wise ==# 'char' || a:region.wise ==# 'v'
     let highlight.order_list = s:highlight_order_charwise(a:region, timeout)
   elseif a:region.wise ==# 'line' || a:region.wise ==# 'V'
@@ -28,16 +27,15 @@ function! highlightedyank#highlight#new(region, ...) abort  "{{{
   return highlight
 endfunction "}}}
 
-" s:highlight "{{{
+" Highlight class "{{{
 let s:highlight = {
-      \   'status': s:OFF,
-      \   'group': '',
-      \   'id': [],
-      \   'order_list': [],
-      \   'region': {},
-      \   'bufnr': 0,
-      \   'winid': 0,
-      \ }
+  \   'status': s:OFF,
+  \   'group': '',
+  \   'id': [],
+  \   'order_list': [],
+  \   'bufnr': 0,
+  \   'winid': 0,
+  \ }
 "}}}
 function! s:highlight.show(...) dict abort "{{{
   if empty(self.order_list)
@@ -151,7 +149,7 @@ function! s:quench(id) abort  "{{{
 endfunction "}}}
 function! highlightedyank#highlight#cancel(...) abort "{{{
   if a:0 > 0
-    let id_list = type(a:1) == s:TYPELIST ? a:1 : a:000
+    let id_list = type(a:1) == s:Type.LIST ? a:1 : a:000
   else
     let id_list = map(keys(s:quench_table), 'str2nr(v:val)')
   endif
@@ -391,7 +389,7 @@ function! s:shift_options() abort "{{{
 
   """ tweak appearance
   " hide_cursor
-  if s:HAS_GUI_RUNNING
+  if s:Feature.GUI_RUNNING
     let options.cursor = &guicursor
     set guicursor+=a:block-NONE
   else
@@ -402,7 +400,7 @@ function! s:shift_options() abort "{{{
   return options
 endfunction "}}}
 function! s:restore_options(options) abort "{{{
-  if s:HAS_GUI_RUNNING
+  if s:Feature.GUI_RUNNING
     set guicursor&
     let &guicursor = a:options.cursor
   else

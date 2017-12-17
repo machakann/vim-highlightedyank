@@ -1,14 +1,9 @@
 " clock object - measuring elapsed time in a operation
-
-" variables "{{{
-" features
-let s:has_reltime_and_float = has('reltime') && has('float')
-"}}}
+let s:HAS_RELTIME_AND_FLOAT = has('reltime') && has('float')
 
 function! highlightedyank#clock#new() abort  "{{{
   return deepcopy(s:clock)
-endfunction
-"}}}
+endfunction "}}}
 
 " s:clock "{{{
 let s:clock = {
@@ -26,18 +21,16 @@ function! s:clock.start() dict abort  "{{{
       let self.paused = 0
     endif
   else
-    if s:has_reltime_and_float
+    if s:HAS_RELTIME_AND_FLOAT
       let self.zerotime = reltime()
       let self.started  = 1
     endif
   endif
-endfunction
-"}}}
+endfunction "}}}
 function! s:clock.pause() dict abort "{{{
   let self.stoptime = reltime()
   let self.paused   = 1
-endfunction
-"}}}
+endfunction "}}}
 function! s:clock.elapsed() dict abort "{{{
   if self.started
     let total = str2float(reltimestr(reltime(self.zerotime)))
@@ -45,14 +38,12 @@ function! s:clock.elapsed() dict abort "{{{
   else
     return 0
   endif
-endfunction
-"}}}
+endfunction "}}}
 function! s:clock.stop() dict abort  "{{{
   let self.started  = 0
   let self.paused   = 0
   let self.losstime = 0
-endfunction
-"}}}
+endfunction "}}}
 
 
 " vim:set foldmethod=marker:

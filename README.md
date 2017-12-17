@@ -8,10 +8,12 @@ there is no need for configuration, as the highlight event is automatically trig
 
 ### If you are using older Vim,
 
-add the line into your vimrc.
+define a keymapping to `<Plug>(highlightedyank)`. It would be good to check the existence of |TextYankPost| event.
 
 ```vim
-map y <Plug>(highlightedyank)
+if !exists('##TextYankPost')
+  map y <Plug>(highlightedyank)
+endif
 ```
 
 ## Optimizing highlight duration
