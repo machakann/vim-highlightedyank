@@ -74,6 +74,9 @@ function! s:derive_region_line(regcontents) abort "{{{
   let region.wise = 'line'
   let region.head = getpos("'[")
   let region.tail = getpos("']")
+  if region.tail[2] == s:MAXCOL
+    let region.tail[2] = col([region.tail[1], '$'])
+  endif
   return region
 endfunction "}}}
 function! s:derive_region_block(regcontents, width) abort "{{{
@@ -104,7 +107,7 @@ function! s:modify_region(region) abort "{{{
   if a:region.tail[2] != col([a:region.tail[1], '$']) && a:region.tail[3] == 0
     let cursor = getpos('.')
     call setpos('.', a:region.tail)
-    call search('.', 'bc')
+    call search('\%(^\|.\)', 'bc')
     let a:region.tail = getpos('.')
     call setpos('.', cursor)
   endif
