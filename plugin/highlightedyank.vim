@@ -1,5 +1,5 @@
 " highlighted-yank: Make the yanked region apparent!
-" Last Change: 17-Dec-2017.
+" Last Change: 11-Jan-2018.
 " Maintainer : Masaaki Nakamura <mckn@outlook.com>
 
 " License    : NYSL
@@ -23,7 +23,7 @@ augroup END
 if exists('##TextYankPost') && !hasmapto('<Plug>(highlightedyank)') && !exists('g:highlightedyank_disable_autocmd')
   augroup highlightedyank
     autocmd!
-    autocmd TextYankPost * silent call highlightedyank#autocmd_highlight()
+    autocmd TextYankPost * call highlightedyank#autocmd_highlight()
   augroup END
 
   " commands
