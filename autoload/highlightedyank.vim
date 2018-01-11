@@ -81,7 +81,7 @@ function! s:derive_region_line(regcontents) abort "{{{
 endfunction "}}}
 function! s:derive_region_block(regcontents, width) abort "{{{
   let len = len(a:regcontents)
-  if len > 0
+  if len == 0
     return deepcopy(s:NULLREGION)
   endif
 
