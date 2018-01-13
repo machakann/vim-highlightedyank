@@ -63,9 +63,16 @@ function! s:derive_region_char(regcontents) abort "{{{
     let region = deepcopy(s:NULLREGION)
   elseif len == 1
     let region.tail[2] += strlen(a:regcontents[0]) - 1
+  elseif len == 2 && empty(a:regcontents[1])
+    let region.tail[2] += strlen(a:regcontents[0])
   else
-    let region.tail[1] += len - 1
-    let region.tail[2] = strlen(a:regcontents[-1])
+    if empty(a:regcontents[-1])
+      let region.tail[1] += len - 2
+      let region.tail[2] = strlen(a:regcontents[-2])
+    else
+      let region.tail[1] += len - 1
+      let region.tail[2] = strlen(a:regcontents[-1])
+    endif
   endif
   return region
 endfunction "}}}
