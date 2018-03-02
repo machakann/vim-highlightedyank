@@ -23,7 +23,7 @@ augroup END
 if exists('##TextYankPost') && !hasmapto('<Plug>(highlightedyank)') && !exists('g:highlightedyank_disable_autocmd')
   augroup highlightedyank
     autocmd!
-    autocmd TextYankPost * call highlightedyank#autocmd_highlight()
+    autocmd TextYankPost * call highlightedyank#debounce()
   augroup END
 
   " commands
