@@ -60,7 +60,11 @@ function! s:derive_region(regtype, regcontents) abort "{{{
   elseif a:regtype ==# 'V'
     let region = s:derive_region_line(a:regcontents)
   elseif a:regtype[0] ==# "\<C-v>"
-    let width = str2nr(a:regtype[1:])
+    " NOTE: the width from v:event.regtype is not correct if 'clipboard' is
+    "       unnamed or unnamedplus in windows
+    " let width = str2nr(a:regtype[1:])
+    let curcol = col('.') - 1
+    let width = max(map(copy(a:regcontents), 'strdisplaywidth(v:val, curcol)'))
     let region = s:derive_region_block(a:regcontents, width)
   else
     let region = deepcopy(s:NULLREGION)
