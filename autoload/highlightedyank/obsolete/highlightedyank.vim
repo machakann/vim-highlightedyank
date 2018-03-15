@@ -25,7 +25,7 @@ let s:normal['g@'] = s:SID . '(highlightedyank-g@)'
 let s:normal['gv'] = s:SID . '(highlightedyank-gv)'
 
 let s:STATE = s:ON
-function! highlightedyank#obsolete#yank(mode) abort  "{{{
+function! highlightedyank#obsolete#highlightedyank#yank(mode) abort  "{{{
   let l:count = v:count ? v:count : ''
   let register = v:register ==# s:default_register() ? '' : s:normal['"'] . v:register
   if a:mode ==# 'n'
@@ -34,11 +34,11 @@ function! highlightedyank#obsolete#yank(mode) abort  "{{{
     call s:yank_visual(register)
   endif
 endfunction "}}}
-function! highlightedyank#obsolete#setoperatorfunc() abort "{{{
-  set operatorfunc=highlightedyank#obsolete#operatorfunc
+function! highlightedyank#obsolete#highlightedyank#setoperatorfunc() abort "{{{
+  set operatorfunc=highlightedyank#obsolete#highlightedyank#operatorfunc
   return ''
 endfunction "}}}
-function! highlightedyank#obsolete#operatorfunc(motionwise, ...) abort "{{{
+function! highlightedyank#obsolete#highlightedyank#operatorfunc(motionwise, ...) abort "{{{
   let region = {'head': getpos("'["), 'tail': getpos("']"), 'wise': a:motionwise}
   if s:is_ahead(region.head, region.tail)
     return
@@ -48,7 +48,7 @@ function! highlightedyank#obsolete#operatorfunc(motionwise, ...) abort "{{{
   execute printf('normal! `[%sy%s`]', register, s:motionwise2visualmode(a:motionwise))
   call s:highlight_yanked_region(region)
 endfunction "}}}
-function! highlightedyank#obsolete#on() abort "{{{
+function! highlightedyank#obsolete#highlightedyank#on() abort "{{{
   let s:STATE = s:ON
   if stridx(&cpoptions, 'y') < 0
     nnoremap <silent> <Plug>(highlightedyank) :<C-u>call highlightedyank#yank('n')<CR>
@@ -61,11 +61,11 @@ function! highlightedyank#obsolete#on() abort "{{{
     onoremap          <Plug>(highlightedyank) g@
   endif
 endfunction "}}}
-function! highlightedyank#obsolete#off() abort "{{{
+function! highlightedyank#obsolete#highlightedyank#off() abort "{{{
   let s:STATE = s:OFF
   noremap <silent> <Plug>(highlightedyank) y
 endfunction "}}}
-function! highlightedyank#obsolete#toggle() abort "{{{
+function! highlightedyank#obsolete#highlightedyank#toggle() abort "{{{
   if s:STATE is s:ON
     call highlightedyank#off()
   else

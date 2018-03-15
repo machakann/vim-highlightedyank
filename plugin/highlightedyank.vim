@@ -1,5 +1,5 @@
 " highlighted-yank: Make the yanked region apparent!
-" Last Change: 11-Jan-2018.
+" Last Change: 15-Mar-2018.
 " Maintainer : Masaaki Nakamura <mckn@outlook.com>
 
 " License    : NYSL
@@ -33,12 +33,12 @@ if exists('##TextYankPost') && !hasmapto('<Plug>(highlightedyank)') && !exists('
 else
   function! s:keymap() abort
     if stridx(&cpoptions, 'y') < 0
-      nnoremap <silent> <Plug>(highlightedyank) :<C-u>call highlightedyank#obsolete#yank('n')<CR>
-      xnoremap <silent> <Plug>(highlightedyank) :<C-u>call highlightedyank#obsolete#yank('x')<CR>
+      nnoremap <silent> <Plug>(highlightedyank) :<C-u>call highlightedyank#obsolete#highlightedyank#yank('n')<CR>
+      xnoremap <silent> <Plug>(highlightedyank) :<C-u>call highlightedyank#obsolete#highlightedyank#yank('x')<CR>
       onoremap          <Plug>(highlightedyank) y
     else
       noremap  <silent> <Plug>(highlightedyank-g@) g@
-      noremap  <expr>   <Plug>(highlightedyank-setoperatorfunc) highlightedyank#obsolete#setoperatorfunc()
+      noremap  <expr>   <Plug>(highlightedyank-setoperatorfunc) highlightedyank#obsolete#highlightedyank#setoperatorfunc()
       nmap     <silent> <Plug>(highlightedyank) <Plug>(highlightedyank-setoperatorfunc)<Plug>(highlightedyank-g@)
       xmap     <silent> <Plug>(highlightedyank) <Plug>(highlightedyank-setoperatorfunc)<Plug>(highlightedyank-g@)
       onoremap          <Plug>(highlightedyank) g@
@@ -54,8 +54,8 @@ else
   endif
 
   " commands
-  command! -nargs=0 -bar HighlightedyankOn     call highlightedyank#obsolete#on()
-  command! -nargs=0 -bar HighlightedyankOff    call highlightedyank#obsolete#off()
-  command! -nargs=0 -bar HighlightedyankToggle call highlightedyank#obsolete#toggle()
+  command! -nargs=0 -bar HighlightedyankOn     call highlightedyank#obsolete#highlightedyank#on()
+  command! -nargs=0 -bar HighlightedyankOff    call highlightedyank#obsolete#highlightedyank#off()
+  command! -nargs=0 -bar HighlightedyankToggle call highlightedyank#obsolete#highlightedyank#toggle()
 endif
 
