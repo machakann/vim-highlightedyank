@@ -11,13 +11,14 @@ let s:NULLREGION = {
 let s:MAXCOL = 2147483647
 let s:ON = 1
 let s:OFF = 0
+let s:HIGROUP = 'HighlightedyankRegion'
 
-let s:STATE = s:ON
+let s:state = s:ON
 let s:quenchtask = {}
 
 
-function! highlightedyank#debounce() abort
-  if s:STATE is s:OFF
+function! highlightedyank#debounce() abort "{{{
+  if s:state is s:OFF
     return
   endif
 
@@ -28,10 +29,10 @@ function! highlightedyank#debounce() abort
     call timer_stop(s:timer)
   endif
   let marks = [line("'["), line("']"), col("'["), col("']")]
-  let s:timer = timer_start(1, {-> highlightedyank#autocmd_highlight(operator, regtype, regcontents, marks)})
-endfunction
+  let s:timer = timer_start(1, {-> s:highlight(operator, regtype, regcontents, marks)})
+endfunction "}}}
 
-function! highlightedyank#autocmd_highlight(operator, regtype, regcontents, marks) abort "{{{
+function! s:highlight(operator, regtype, regcontents, marks) abort "{{{
   if a:marks !=#  [line("'["), line("']"), col("'["), col("']")]
     return
   endif
@@ -41,18 +42,25 @@ function! highlightedyank#autocmd_highlight(operator, regtype, regcontents, mark
 
   let view = winsaveview()
   let region = s:derive_region(a:regtype, a:regcontents)
-  call s:modify_region(region)
-  call s:highlight_yanked_region(region)
+  let maxlinenumber = s:get('max_lines', 10000)
+  if region.tail[1] - region.head[1] + 1 <= maxlinenumber
+    let hi_duration = s:get('highlight_duration', 1000)
+    let timeout = s:get('timeout', 1000)
+    let highlight = highlightedyank#highlight#new(region, timeout)
+    if !highlight.empty() && hi_duration != 0
+      call s:glow(highlight, s:HIGROUP, hi_duration)
+    endif
+  endif
   call winrestview(view)
 endfunction "}}}
 function! highlightedyank#on() abort "{{{
-  let s:STATE = s:ON
+  let s:state = s:ON
 endfunction "}}}
 function! highlightedyank#off() abort "{{{
-  let s:STATE = s:OFF
+  let s:state = s:OFF
 endfunction "}}}
 function! highlightedyank#toggle() abort "{{{
-  if s:STATE is s:ON
+  if s:state is s:ON
     call highlightedyank#off()
   else
     call highlightedyank#on()
@@ -96,7 +104,7 @@ function! s:derive_region_char(regcontents) abort "{{{
       let region.tail[2] = strlen(a:regcontents[-1])
     endif
   endif
-  return region
+  return s:modify_region(region)
 endfunction "}}}
 function! s:derive_region_line(regcontents) abort "{{{
   let region = {}
@@ -129,7 +137,7 @@ function! s:derive_region_block(regcontents, width) abort "{{{
     let region.blockwidth = s:MAXCOL
   endif
   call setpos('.', curpos)
-  return region
+  return s:modify_region(region)
 endfunction "}}}
 function! s:modify_region(region) abort "{{{
   " for multibyte characters
@@ -141,22 +149,6 @@ function! s:modify_region(region) abort "{{{
     call setpos('.', cursor)
   endif
   return a:region
-endfunction "}}}
-function! s:highlight_yanked_region(region) abort "{{{
-  let maxlinenumber = s:get('max_lines', 10000)
-  if a:region.tail[1] - a:region.head[1] + 1 > maxlinenumber
-    return
-  endif
-
-  let keyseq = ''
-  let hi_group = 'HighlightedyankRegion'
-  let hi_duration = s:get('highlight_duration', 1000)
-  let timeout = s:get('timeout', 1000)
-  let highlight = highlightedyank#highlight#new(a:region, timeout)
-  if highlight.empty() || hi_duration == 0
-    return
-  endif
-  call s:glow(highlight, hi_group, hi_duration)
 endfunction "}}}
 function! s:glow(highlight, hi_group, duration) abort "{{{
   if !empty(s:quenchtask) && !s:quenchtask.hasdone()
