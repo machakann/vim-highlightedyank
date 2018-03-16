@@ -3,8 +3,6 @@
 "        multiple lines.
 let s:Schedule = vital#highlightedyank#new().import('Schedule').augroup('highlightedyank-highlight')
 let s:Const = highlightedyank#constant#import()
-let s:Feature = s:Const.Feature
-let s:Type = s:Const.Type
 let s:NULLREGION = s:Const.NULLREGION
 let s:MAXCOL = s:Const.MAXCOL
 let s:ON = 1
@@ -154,20 +152,7 @@ function! s:highlight_yanked_region(region) abort "{{{
   if highlight.empty() || hi_duration == 0
     return
   endif
-  if s:Feature.TIMERS || hi_duration < 0
-    call s:glow(highlight, hi_group, hi_duration)
-  else
-    let keyseq = s:blink(highlight, hi_group, hi_duration)
-    call feedkeys(keyseq, 'it')
-  endif
-endfunction "}}}
-function! s:blink(highlight, hi_group, duration) abort "{{{
-  let key = ''
-  if a:highlight.show(a:hi_group)
-    redraw
-    let key = s:wait_for_input(a:highlight, a:duration)
-  endif
-  return key
+  call s:glow(highlight, hi_group, hi_duration)
 endfunction "}}}
 function! s:glow(highlight, hi_group, duration) abort "{{{
   if !empty(s:quenchtask) && !s:quenchtask.hasdone()
@@ -187,30 +172,6 @@ function! s:glow(highlight, hi_group, duration) abort "{{{
   call s:quenchtask.call(switchtask.cancel, [], switchtask)
   call s:quenchtask.waitfor([a:duration, ['TextChanged', '<buffer>'],
     \ ['InsertEnter', '<buffer>'], ['BufUnload', '<buffer>']])
-endfunction "}}}
-function! s:wait_for_input(highlight, duration) abort  "{{{
-  let clock = highlightedyank#clock#new()
-  try
-    let c = 0
-    call clock.start()
-    while empty(c)
-      let c = getchar(0)
-      if clock.started && clock.elapsed() > a:duration
-        break
-      endif
-      sleep 20m
-    endwhile
-  finally
-    call a:highlight.quench()
-    call clock.stop()
-  endtry
-
-  if c == 0
-    let c = ''
-  else
-    let c = type(c) == s:Type.NUM ? nr2char(c) : c
-  endif
-  return c
 endfunction "}}}
 function! s:get(name, default) abort  "{{{
   let identifier = 'highlightedyank_' . a:name
