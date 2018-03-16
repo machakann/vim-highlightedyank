@@ -13,11 +13,9 @@ let s:ON = 1
 let s:OFF = 0
 let s:HIGROUP = 'HighlightedyankRegion'
 
-let s:state = s:ON
+
+
 let s:timer = -1
-let s:quenchtask = {}
-
-
 
 function! highlightedyank#debounce() abort "{{{
   if s:state is s:OFF
@@ -34,6 +32,8 @@ function! highlightedyank#debounce() abort "{{{
   let s:timer = timer_start(1, {-> s:highlight(operator, regtype, regcontents, marks)})
 endfunction "}}}
 
+
+let s:state = s:ON
 
 function! highlightedyank#on() abort "{{{
   let s:state = s:ON
@@ -68,10 +68,8 @@ function! s:highlight(operator, regtype, regcontents, marks) abort "{{{
   let maxlinenumber = s:get('max_lines', 10000)
   if region.tail[1] - region.head[1] + 1 <= maxlinenumber
     let hi_duration = s:get('highlight_duration', 1000)
-    let timeout = s:get('timeout', 1000)
-    let highlight = highlightedyank#highlight#new(region, timeout)
-    if !highlight.empty() && hi_duration != 0
-      call s:glow(highlight, s:HIGROUP, hi_duration)
+    if hi_duration != 0
+      call s:glow(region, s:HIGROUP, hi_duration)
     endif
   endif
   call winrestview(view)
@@ -172,21 +170,29 @@ function! s:modify_region(region) abort "{{{
 endfunction "}}}
 
 
-function! s:glow(highlight, hi_group, duration) abort "{{{
+let s:quenchtask = {}
+
+function! s:glow(region, hi_group, duration) abort "{{{
+  let timeout = s:get('timeout', 1000)
+  let highlight = highlightedyank#highlight#new(a:region, timeout)
+  if highlight.empty()
+    return
+  endif
+
   if !empty(s:quenchtask) && !s:quenchtask.hasdone()
     call s:quenchtask.trigger()
   endif
-  if !a:highlight.show(a:hi_group)
+  if !highlight.show(a:hi_group)
     return
   endif
 
   let switchtask = s:Schedule.Task()
   call switchtask.repeat(-1)
-  call switchtask.call(a:highlight.switch, [], a:highlight)
+  call switchtask.call(highlight.switch, [], highlight)
   call switchtask.waitfor(['BufEnter'])
 
   let s:quenchtask = s:Schedule.Task()
-  call s:quenchtask.call(a:highlight.quench, [], a:highlight)
+  call s:quenchtask.call(highlight.quench, [], highlight)
   call s:quenchtask.call(switchtask.cancel, [], switchtask)
   call s:quenchtask.waitfor([a:duration, ['TextChanged', '<buffer>'],
     \ ['InsertEnter', '<buffer>'], ['BufUnload', '<buffer>']])
