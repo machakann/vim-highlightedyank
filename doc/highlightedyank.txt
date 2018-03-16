@@ -1,5 +1,5 @@
 *highlightedyank.txt*	Make the yanked region apparent!
-						Last change:17-Dec-2017.
+						Last change:16-Mar-2018.
 
 Author  : machakann <mckn{at}outlook.jp>
 License : NYSL license
@@ -54,7 +54,7 @@ the position, also.
 ------------------------------------------------------------------------------
 
 The highlight process could be slow when you yanked a wide region. Thus, this
-plugin has two safety to avoid the problem.
+plugin has the safety to avoid the problem.
 
 					*g:highlightedyank_max_lines*
 					*b:highlightedyank_max_lines*
@@ -64,20 +64,7 @@ vimrc make this plugin to give up over one thousand lines.
 >
 	let g:highlightedyank_max_lines = 1000
 <
-If both of those variables are not assigned, it gives up over 10000 lines.
-
-
-
-					*g:highlightedyank_timeout*
-					*b:highlightedyank_timeout*
-|g:highlightedyank_timeout| and |b:highlightedyank_timeout| enables to set a
-threshold time to give up highlighting. The following line in vimrc make this
-plugin to give up over 500 milliseconds = 0.5 seconds.
->
-	let g:highlightedyank_timeout = 500
-<
-If both of those variables are not assigned, it gives up over 1 second (1000
-milliseconds).
+If both of those variables are not defined, it gives up over 10000 lines.
 
 ==============================================================================
 HIGHLIGHT GROUPS			*highlightedyank-highlight-groups*

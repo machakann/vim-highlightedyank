@@ -173,8 +173,7 @@ endfunction "}}}
 let s:quenchtask = {}
 
 function! s:glow(region, hi_group, duration) abort "{{{
-  let timeout = s:get('timeout', 1000)
-  let highlight = highlightedyank#highlight#new(a:region, timeout)
+  let highlight = highlightedyank#highlight#new(a:region)
   if highlight.empty()
     return
   endif

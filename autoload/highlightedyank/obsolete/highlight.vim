@@ -15,15 +15,14 @@ delfunction s:SID
 
 
 
-function! highlightedyank#obsolete#highlight#new(region, ...) abort  "{{{
-  let timeout = get(a:000, 0, 1/0)
+function! highlightedyank#obsolete#highlight#new(region) abort  "{{{
   let highlight = deepcopy(s:highlight)
   if a:region.wise ==# 'char' || a:region.wise ==# 'v'
-    let highlight.order_list = s:highlight_order_charwise(a:region, timeout)
+    let highlight.order_list = s:highlight_order_charwise(a:region)
   elseif a:region.wise ==# 'line' || a:region.wise ==# 'V'
-    let highlight.order_list = s:highlight_order_linewise(a:region, timeout)
+    let highlight.order_list = s:highlight_order_linewise(a:region)
   elseif a:region.wise ==# 'block' || a:region.wise[0] ==# "\<C-v>"
-    let highlight.order_list = s:highlight_order_blockwise(a:region, timeout)
+    let highlight.order_list = s:highlight_order_blockwise(a:region)
   endif
   return highlight
 endfunction "}}}
@@ -248,7 +247,7 @@ endfunction "}}}
 
 
 " private functions
-function! s:highlight_order_charwise(region, timeout) abort  "{{{
+function! s:highlight_order_charwise(region) abort  "{{{
   if a:region.head == s:NULLPOS || a:region.tail == s:NULLPOS || s:is_ahead(a:region.head, a:region.tail)
     return []
   endif
@@ -260,8 +259,6 @@ function! s:highlight_order_charwise(region, timeout) abort  "{{{
   let order = []
   let order_list = []
   let n = 0
-  let clock = highlightedyank#clock#new()
-  call clock.start()
   for lnum in range(a:region.head[1], a:region.tail[1])
     if lnum == a:region.head[1]
       let order += [a:region.head[1:2] + [col([a:region.head[1], '$']) - a:region.head[2] + 1]]
@@ -278,11 +275,6 @@ function! s:highlight_order_charwise(region, timeout) abort  "{{{
     else
       let n += 1
     endif
-    if clock.started && clock.elapsed() > a:timeout
-      let order = []
-      let order_list = []
-      break
-    endif
   endfor
   if order != []
     let order_list += [order]
@@ -291,7 +283,7 @@ function! s:highlight_order_charwise(region, timeout) abort  "{{{
 endfunction "}}}
 
 
-function! s:highlight_order_linewise(region, timeout) abort  "{{{
+function! s:highlight_order_linewise(region) abort  "{{{
   if a:region.head == s:NULLPOS || a:region.tail == s:NULLPOS || a:region.head[1] > a:region.tail[1]
     return []
   endif
@@ -299,8 +291,6 @@ function! s:highlight_order_linewise(region, timeout) abort  "{{{
   let order = []
   let order_list = []
   let n = 0
-  let clock = highlightedyank#clock#new()
-  call clock.start()
   for lnum in range(a:region.head[1], a:region.tail[1])
     let order += [[lnum]]
     if n == 7
@@ -310,11 +300,6 @@ function! s:highlight_order_linewise(region, timeout) abort  "{{{
     else
       let n += 1
     endif
-    if clock.started && clock.elapsed() > a:timeout
-      let order = []
-      let order_list = []
-      break
-    endif
   endfor
   if order != []
     let order_list += [order]
@@ -323,7 +308,7 @@ function! s:highlight_order_linewise(region, timeout) abort  "{{{
 endfunction "}}}
 
 
-function! s:highlight_order_blockwise(region, timeout) abort "{{{
+function! s:highlight_order_blockwise(region) abort "{{{
   if a:region.head == s:NULLPOS || a:region.tail == s:NULLPOS || s:is_ahead(a:region.head, a:region.tail)
     return []
   endif
@@ -338,8 +323,6 @@ function! s:highlight_order_blockwise(region, timeout) abort "{{{
   let order = []
   let order_list = []
   let n = 0
-  let clock = highlightedyank#clock#new()
-  call clock.start()
   for lnum in range(a:region.head[1], a:region.tail[1])
     call cursor(lnum, 1)
     execute printf('normal! %s|', vcol_head)
@@ -356,11 +339,6 @@ function! s:highlight_order_blockwise(region, timeout) abort "{{{
       let n = 0
     else
       let n += 1
-    endif
-    if clock.started && clock.elapsed() > a:timeout
-      let order = []
-      let order_list = []
-      break
     endif
   endfor
   if order != []

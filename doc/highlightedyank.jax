@@ -1,5 +1,5 @@
 *highlightedyank.txt*	ヤンクした場所をわかりやすくする。
-						Last change:17-Dec-2017.
+						Last change:16-Mar-2018.
 
 書いた人   : machakann <mckn{at}outlook.jp>
 ライセンス : NYSL ライセンス
@@ -53,7 +53,7 @@ Vim 8.0.1934 か neovim <https://neovim.io/> を使用している場合はイ�
 ------------------------------------------------------------------------------
 
 ハイライト処理はしばしば、特に多くの行をヤンクした場合に遅くなります。これを避
-けるために二つの安全策が設けられています。
+けるために次の安全策が設けられています。
 
 					*g:highlightedyank_max_lines*
 					*b:highlightedyank_max_lines*
@@ -65,19 +65,6 @@ Vim 8.0.1934 か neovim <https://neovim.io/> を使用している場合はイ�
 <
 これらが明示的に指定されていない場合は、 10000 行を超える場合にハイライトをし
 ません。
-
-
-
-					*g:highlightedyank_timeout*
-					*b:highlightedyank_timeout*
-|g:highlightedyank_timeout| と |b:highlightedyank_timeout| を使い、ハイライト
-に指定された以上の時間がかかった場合、処理を中止させることができます。以下の例
-ではハイライトに 500 ミリ秒 = 0.5 秒以上かかった場合に処理を中止させます。
->
-	let g:highlightedyank_timeout = 500
-<
-これらが明示的に指定されていない場合は、 1秒 (1000 ミリ秒) を超える場合にハイ
-ライトをしません。
 
 ==============================================================================
 HIGHLIGHT GROUPS			*highlightedyank-highlight-groups*

@@ -265,8 +265,7 @@ function! s:highlight_yanked_region(region) abort "{{{
   let keyseq = ''
   let hi_group = 'HighlightedyankRegion'
   let hi_duration = s:get('highlight_duration', 1000)
-  let timeout = s:get('timeout', 1000)
-  let highlight = highlightedyank#highlight#new(a:region, timeout)
+  let highlight = highlightedyank#highlight#new(a:region)
   if highlight.empty()
     return
   endif
@@ -313,7 +312,7 @@ endfunction "}}}
 
 
 function! s:wait_for_input(highlight, duration) abort  "{{{
-  let clock = highlightedyank#clock#new()
+  let clock = highlightedyank#obsolete#clock#new()
   try
     let c = 0
     call clock.start()
