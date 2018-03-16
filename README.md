@@ -43,5 +43,10 @@ If for some reason the highlight is not visible you can redefine the
 hi HighlightedyankRegion cterm=reverse gui=reverse
 ```
 
+## Inspired by
+
+ - [atom-vim-mode-plus](https://github.com/t9md/atom-vim-mode-plus)
+ - [vim-operator-flashy](https://github.com/haya14busa/vim-operator-flashy)
+
 ## Demo
 ![vim-highlightedyank](http://i.imgur.com/HulyZ6n.gif)
