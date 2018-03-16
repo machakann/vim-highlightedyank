@@ -6,6 +6,8 @@ let s:MAXCOL = 2147483647
 let s:ON = 1
 let s:OFF = 0
 
+
+
 function! highlightedyank#highlight#new(region, ...) abort  "{{{
   let timeout = get(a:000, 0, 1/0)
   let highlight = deepcopy(s:highlight)
@@ -19,7 +21,8 @@ function! highlightedyank#highlight#new(region, ...) abort  "{{{
   return highlight
 endfunction "}}}
 
-" Highlight class "{{{
+
+" Highlight class {{{
 let s:highlight = {
   \   'status': s:OFF,
   \   'group': '',
@@ -28,7 +31,8 @@ let s:highlight = {
   \   'bufnr': 0,
   \   'winid': 0,
   \ }
-"}}}
+
+
 function! s:highlight.show(...) dict abort "{{{
   if empty(self.order_list)
     return 0
@@ -62,6 +66,8 @@ function! s:highlight.show(...) dict abort "{{{
   let self.winid = win_getid()
   return 1
 endfunction "}}}
+
+
 function! s:highlight.quench() dict abort "{{{
   if self.status is s:OFF
     return 0
@@ -106,6 +112,8 @@ function! s:highlight.quench() dict abort "{{{
   endif
   return succeeded
 endfunction "}}}
+
+
 function! s:highlight.switch() abort "{{{
   if win_getid() != self.winid
     return
@@ -117,11 +125,14 @@ function! s:highlight.switch() abort "{{{
     call self.quench()
   endif
 endfunction "}}}
+
+
 function! s:highlight.empty() abort "{{{
   return empty(self.order_list)
 endfunction "}}}
+"}}}
 
-" private functions
+
 function! s:highlight_order_charwise(region, timeout) abort  "{{{
   if a:region.head == s:NULLPOS || a:region.tail == s:NULLPOS || s:is_ahead(a:region.head, a:region.tail)
     return []
@@ -163,6 +174,8 @@ function! s:highlight_order_charwise(region, timeout) abort  "{{{
   endif
   return order_list
 endfunction "}}}
+
+
 function! s:highlight_order_linewise(region, timeout) abort  "{{{
   if a:region.head == s:NULLPOS || a:region.tail == s:NULLPOS || a:region.head[1] > a:region.tail[1]
     return []
@@ -193,6 +206,8 @@ function! s:highlight_order_linewise(region, timeout) abort  "{{{
   endif
   return order_list
 endfunction "}}}
+
+
 function! s:highlight_order_blockwise(region, timeout) abort "{{{
   if a:region.head == s:NULLPOS || a:region.tail == s:NULLPOS || s:is_ahead(a:region.head, a:region.tail)
     return []
@@ -239,9 +254,13 @@ function! s:highlight_order_blockwise(region, timeout) abort "{{{
   call winrestview(view)
   return order_list
 endfunction "}}}
+
+
 function! s:is_ahead(pos1, pos2) abort  "{{{
   return a:pos1[1] > a:pos2[1] || (a:pos1[1] == a:pos2[1] && a:pos1[2] > a:pos2[2])
 endfunction "}}}
+
+
 function! s:is_in_cmdline_window() abort "{{{
   return getcmdwintype() !=# ''
 endfunction "}}}

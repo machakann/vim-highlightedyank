@@ -18,6 +18,7 @@ let s:timer = -1
 let s:quenchtask = {}
 
 
+
 function! highlightedyank#debounce() abort "{{{
   if s:state is s:OFF
     return
@@ -32,6 +33,26 @@ function! highlightedyank#debounce() abort "{{{
   let marks = [line("'["), line("']"), col("'["), col("']")]
   let s:timer = timer_start(1, {-> s:highlight(operator, regtype, regcontents, marks)})
 endfunction "}}}
+
+
+function! highlightedyank#on() abort "{{{
+  let s:state = s:ON
+endfunction "}}}
+
+
+function! highlightedyank#off() abort "{{{
+  let s:state = s:OFF
+endfunction "}}}
+
+
+function! highlightedyank#toggle() abort "{{{
+  if s:state is s:ON
+    call highlightedyank#off()
+  else
+    call highlightedyank#on()
+  endif
+endfunction "}}}
+
 
 function! s:highlight(operator, regtype, regcontents, marks) abort "{{{
   let s:timer = -1
@@ -55,19 +76,8 @@ function! s:highlight(operator, regtype, regcontents, marks) abort "{{{
   endif
   call winrestview(view)
 endfunction "}}}
-function! highlightedyank#on() abort "{{{
-  let s:state = s:ON
-endfunction "}}}
-function! highlightedyank#off() abort "{{{
-  let s:state = s:OFF
-endfunction "}}}
-function! highlightedyank#toggle() abort "{{{
-  if s:state is s:ON
-    call highlightedyank#off()
-  else
-    call highlightedyank#on()
-  endif
-endfunction "}}}
+
+
 function! s:derive_region(regtype, regcontents) abort "{{{
   if a:regtype ==# 'v'
     let region = s:derive_region_char(a:regcontents)
@@ -85,6 +95,8 @@ function! s:derive_region(regtype, regcontents) abort "{{{
   endif
   return region
 endfunction "}}}
+
+
 function! s:derive_region_char(regcontents) abort "{{{
   let len = len(a:regcontents)
   let region = {}
@@ -108,6 +120,8 @@ function! s:derive_region_char(regcontents) abort "{{{
   endif
   return s:modify_region(region)
 endfunction "}}}
+
+
 function! s:derive_region_line(regcontents) abort "{{{
   let region = {}
   let region.wise = 'line'
@@ -118,6 +132,8 @@ function! s:derive_region_line(regcontents) abort "{{{
   endif
   return region
 endfunction "}}}
+
+
 function! s:derive_region_block(regcontents, width) abort "{{{
   let len = len(a:regcontents)
   if len == 0
@@ -141,6 +157,8 @@ function! s:derive_region_block(regcontents, width) abort "{{{
   call setpos('.', curpos)
   return s:modify_region(region)
 endfunction "}}}
+
+
 function! s:modify_region(region) abort "{{{
   " for multibyte characters
   if a:region.tail[2] != col([a:region.tail[1], '$']) && a:region.tail[3] == 0
@@ -152,6 +170,8 @@ function! s:modify_region(region) abort "{{{
   endif
   return a:region
 endfunction "}}}
+
+
 function! s:glow(highlight, hi_group, duration) abort "{{{
   if !empty(s:quenchtask) && !s:quenchtask.hasdone()
     call s:quenchtask.trigger()
@@ -171,6 +191,8 @@ function! s:glow(highlight, hi_group, duration) abort "{{{
   call s:quenchtask.waitfor([a:duration, ['TextChanged', '<buffer>'],
     \ ['InsertEnter', '<buffer>'], ['BufUnload', '<buffer>']])
 endfunction "}}}
+
+
 function! s:get(name, default) abort  "{{{
   let identifier = 'highlightedyank_' . a:name
   return get(b:, identifier, get(g:, identifier, a:default))

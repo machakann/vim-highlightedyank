@@ -13,6 +13,8 @@ endfunction
 let s:SID = printf("\<SNR>%s_", s:SID())
 delfunction s:SID
 
+
+
 function! highlightedyank#obsolete#highlight#new(region, ...) abort  "{{{
   let timeout = get(a:000, 0, 1/0)
   let highlight = deepcopy(s:highlight)
@@ -26,6 +28,7 @@ function! highlightedyank#obsolete#highlight#new(region, ...) abort  "{{{
   return highlight
 endfunction "}}}
 
+
 " Highlight class "{{{
 let s:highlight = {
   \   'status': s:OFF,
@@ -35,7 +38,8 @@ let s:highlight = {
   \   'bufnr': 0,
   \   'winid': 0,
   \ }
-"}}}
+
+
 function! s:highlight.show(...) dict abort "{{{
   if empty(self.order_list)
     return 0
@@ -69,6 +73,8 @@ function! s:highlight.show(...) dict abort "{{{
   let self.winid = s:win_getid()
   return 1
 endfunction "}}}
+
+
 function! s:highlight.quench() dict abort "{{{
   if self.status is s:OFF
     return 0
@@ -107,21 +113,28 @@ function! s:highlight.quench() dict abort "{{{
   endif
   return succeeded
 endfunction "}}}
+
+
 function! s:highlight.quench_timer(time) dict abort "{{{
   let id = timer_start(a:time, s:SID . 'quench')
   let s:quench_table[id] = self
   call s:set_autocmds(id)
   return id
 endfunction "}}}
+
+
 function! s:highlight.persist() dict abort  "{{{
   let id = s:get_pid()
   call s:set_autocmds(id)
   let s:quench_table[id] = self
   return id
 endfunction "}}}
+
+
 function! s:highlight.empty() abort "{{{
   return empty(self.order_list)
 endfunction "}}}
+
 
 " for scheduled-quench "{{{
 let s:quench_table = {}
@@ -137,6 +150,8 @@ function! s:quench(id) abort  "{{{
   call s:clear_autocmds()
   redraw
 endfunction "}}}
+
+
 function! highlightedyank#obsolete#highlight#cancel(...) abort "{{{
   if a:0 > 0
     let id_list = type(a:1) == s:TYPE_LIST ? a:1 : a:000
@@ -148,9 +163,13 @@ function! highlightedyank#obsolete#highlight#cancel(...) abort "{{{
     call s:quench(id)
   endfor
 endfunction "}}}
+
+
 function! s:get(id) abort "{{{
   return get(s:quench_table, a:id, {})
 endfunction "}}}
+
+
 let s:paused = []
 function! s:quench_paused(...) abort "{{{
   if s:is_in_cmdline_window()
@@ -165,12 +184,15 @@ function! s:quench_paused(...) abort "{{{
     autocmd!
   augroup END
 endfunction "}}}
+
+
 function! s:got_out_of_cmdwindow() abort "{{{
   augroup highlightedyank-pause-quenching
     autocmd!
     autocmd CursorMoved * call s:quench_paused()
   augroup END
 endfunction "}}}
+
 
 " ID for persistent highlights
 let s:pid = 0
@@ -183,6 +205,7 @@ function! s:get_pid() abort "{{{
   return s:pid
 endfunction "}}}
 
+
 function! s:set_autocmds(id) abort "{{{
   augroup highlightedyank-highlight
     autocmd!
@@ -192,17 +215,23 @@ function! s:set_autocmds(id) abort "{{{
     execute printf('autocmd BufEnter * call s:switch_highlight(%s)', a:id)
   augroup END
 endfunction "}}}
+
+
 function! s:clear_autocmds() abort "{{{
   augroup highlightedyank-highlight
     autocmd!
   augroup END
 endfunction "}}}
+
+
 function! s:cancel_highlight(id, event) abort  "{{{
   let highlight = s:get(a:id)
   if highlight != {}
     call s:quench(a:id)
   endif
 endfunction "}}}
+
+
 function! s:switch_highlight(id) abort "{{{
   let highlight = s:get(a:id)
   if highlight != {} && highlight.winid == s:win_getid()
@@ -214,6 +243,9 @@ function! s:switch_highlight(id) abort "{{{
   endif
 endfunction "}}}
 "}}}
+"}}}
+
+
 
 " private functions
 function! s:highlight_order_charwise(region, timeout) abort  "{{{
@@ -257,6 +289,8 @@ function! s:highlight_order_charwise(region, timeout) abort  "{{{
   endif
   return order_list
 endfunction "}}}
+
+
 function! s:highlight_order_linewise(region, timeout) abort  "{{{
   if a:region.head == s:NULLPOS || a:region.tail == s:NULLPOS || a:region.head[1] > a:region.tail[1]
     return []
@@ -287,6 +321,8 @@ function! s:highlight_order_linewise(region, timeout) abort  "{{{
   endif
   return order_list
 endfunction "}}}
+
+
 function! s:highlight_order_blockwise(region, timeout) abort "{{{
   if a:region.head == s:NULLPOS || a:region.tail == s:NULLPOS || s:is_ahead(a:region.head, a:region.tail)
     return []
@@ -333,6 +369,8 @@ function! s:highlight_order_blockwise(region, timeout) abort "{{{
   call winrestview(view)
   return order_list
 endfunction "}}}
+
+
 " function! s:matchaddpos(group, pos) abort "{{{
 if exists('*matchaddpos')
   function! s:matchaddpos(group, pos) abort
@@ -352,9 +390,13 @@ else
   endfunction
 endif
 "}}}
+
+
 function! s:is_ahead(pos1, pos2) abort  "{{{
   return a:pos1[1] > a:pos2[1] || (a:pos1[1] == a:pos2[1] && a:pos1[2] > a:pos2[2])
 endfunction "}}}
+
+
 " function! s:is_in_cmdline_window() abort  "{{{
 if exists('*getcmdwintype')
   function! s:is_in_cmdline_window() abort
@@ -374,6 +416,8 @@ else
   endfunction
 endif
 "}}}
+
+
 function! s:shift_options() abort "{{{
   let options = {}
 
@@ -389,6 +433,8 @@ function! s:shift_options() abort "{{{
 
   return options
 endfunction "}}}
+
+
 function! s:restore_options(options) abort "{{{
   if s:HAS_GUI_RUNNING
     set guicursor&
@@ -397,6 +443,8 @@ function! s:restore_options(options) abort "{{{
     let &t_ve = a:options.cursor
   endif
 endfunction "}}}
+
+
 
 " for compatibility
 " function! s:win_getid(...) abort{{{
@@ -409,6 +457,8 @@ else
   endfunction
 endif
 "}}}
+
+
 " function! s:win_gotoid(id) abort{{{
 if exists('*win_gotoid')
   function! s:win_gotoid(id) abort
