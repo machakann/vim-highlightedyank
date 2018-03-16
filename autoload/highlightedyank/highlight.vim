@@ -1,9 +1,8 @@
 " highlight object - managing highlight on a buffer
-let s:Schedule = vital#highlightedyank#new().import('Schedule').augroup('highlightedyank-highlight')
-let s:Const = highlightedyank#constant#import()
-let s:Type = s:Const.Type
-let s:NULLPOS = s:Const.NULLPOS
-let s:MAXCOL = s:Const.MAXCOL
+let s:Schedule = vital#highlightedyank#new().import('Schedule')
+                  \.augroup('highlightedyank-highlight')
+let s:NULLPOS = [0, 0, 0, 0]
+let s:MAXCOL = 2147483647
 let s:ON = 1
 let s:OFF = 0
 

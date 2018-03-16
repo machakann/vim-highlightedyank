@@ -1,9 +1,8 @@
 " highlight object - managing highlight on a buffer
-let s:Const = highlightedyank#constant#import()
-let s:Feature = s:Const.Feature
-let s:Type = s:Const.Type
-let s:NULLPOS = s:Const.NULLPOS
-let s:MAXCOL = s:Const.MAXCOL
+let s:HAS_GUI_RUNNING = has('gui_running')
+let s:TYPE_LIST = type([])
+let s:NULLPOS = [0, 0, 0, 0]
+let s:MAXCOL = 2147483647
 let s:ON = 1
 let s:OFF = 0
 
@@ -140,7 +139,7 @@ function! s:quench(id) abort  "{{{
 endfunction "}}}
 function! highlightedyank#obsolete#highlight#cancel(...) abort "{{{
   if a:0 > 0
-    let id_list = type(a:1) == s:Type.LIST ? a:1 : a:000
+    let id_list = type(a:1) == s:TYPE_LIST ? a:1 : a:000
   else
     let id_list = map(keys(s:quench_table), 'str2nr(v:val)')
   endif
@@ -380,7 +379,7 @@ function! s:shift_options() abort "{{{
 
   """ tweak appearance
   " hide_cursor
-  if s:Feature.GUI_RUNNING
+  if s:HAS_GUI_RUNNING
     let options.cursor = &guicursor
     set guicursor+=a:block-NONE
   else
@@ -391,7 +390,7 @@ function! s:shift_options() abort "{{{
   return options
 endfunction "}}}
 function! s:restore_options(options) abort "{{{
-  if s:Feature.GUI_RUNNING
+  if s:HAS_GUI_RUNNING
     set guicursor&
     let &guicursor = a:options.cursor
   else

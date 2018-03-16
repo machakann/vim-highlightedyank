@@ -1,10 +1,14 @@
 " highlighted-yank: Make the yanked region apparent!
 " FIXME: Highlight region is incorrect when an input ^V[count]l ranges
 "        multiple lines.
-let s:Schedule = vital#highlightedyank#new().import('Schedule').augroup('highlightedyank-highlight')
-let s:Const = highlightedyank#constant#import()
-let s:NULLREGION = s:Const.NULLREGION
-let s:MAXCOL = s:Const.MAXCOL
+let s:Schedule = vital#highlightedyank#new().import('Schedule')
+                  \.augroup('highlightedyank-highlight')
+let s:NULLPOS = [0, 0, 0, 0]
+let s:NULLREGION = {
+  \ 'wise': '', 'blockwidth': 0,
+  \ 'head': copy(s:NULLPOS), 'tail': copy(s:NULLPOS),
+  \ }
+let s:MAXCOL = 2147483647
 let s:ON = 1
 let s:OFF = 0
 

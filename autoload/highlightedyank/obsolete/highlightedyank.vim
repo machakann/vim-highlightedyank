@@ -1,8 +1,12 @@
-let s:Const = highlightedyank#constant#import()
-let s:Feature = s:Const.Feature
-let s:Type = s:Const.Type
-let s:NULLREGION = s:Const.NULLREGION
-let s:MAXCOL = s:Const.MAXCOL
+let s:NULLPOS = [0, 0, 0, 0]
+let s:NULLREGION = {
+  \ 'wise': '', 'blockwidth': 0,
+  \ 'head': copy(s:NULLPOS), 'tail': copy(s:NULLPOS),
+  \ }
+let s:MAXCOL = 2147483647
+let s:HAS_GUI_RUNNING = has('gui_running')
+let s:HAS_TIMERS = has('timers')
+let s:TYPE_NUM = type(0)
 let s:ON = 1
 let s:OFF = 0
 
@@ -138,7 +142,7 @@ function! s:query(count) abort "{{{
         continue
       endif
 
-      let c = type(c) == s:Type.NUM ? nr2char(c) : c
+      let c = type(c) == s:TYPE_NUM ? nr2char(c) : c
       if c ==# "\<Esc>"
         break
       endif
@@ -236,7 +240,7 @@ function! s:highlight_yanked_region(region) abort "{{{
   if hi_duration < 0
     call s:persist(highlight, hi_group)
   elseif hi_duration > 0
-    if s:Feature.TIMERS
+    if s:HAS_GUI_RUNNING
       call s:glow(highlight, hi_group, hi_duration)
     else
       let keyseq = s:blink(highlight, hi_group, hi_duration)
@@ -287,7 +291,7 @@ function! s:wait_for_input(highlight, duration) abort  "{{{
   if c == 0
     let c = ''
   else
-    let c = type(c) == s:Type.NUM ? nr2char(c) : c
+    let c = type(c) == s:TYPE_NUM ? nr2char(c) : c
   endif
 
   return c
@@ -297,7 +301,7 @@ function! s:shift_options() abort "{{{
 
   """ tweak appearance
   " hide_cursor
-  if s:Feature.GUI_RUNNING
+  if s:HAS_GUI_RUNNING
     let options.cursor = &guicursor
     set guicursor+=a:block-NONE
   else
@@ -308,7 +312,7 @@ function! s:shift_options() abort "{{{
   return options
 endfunction "}}}
 function! s:restore_options(options) abort "{{{
-  if s:Feature.GUI_RUNNING
+  if s:HAS_GUI_RUNNING
     set guicursor&
     let &guicursor = a:options.cursor
   else
