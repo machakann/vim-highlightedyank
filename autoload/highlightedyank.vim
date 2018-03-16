@@ -1,6 +1,7 @@
 " highlighted-yank: Make the yanked region apparent!
 " FIXME: Highlight region is incorrect when an input ^V[count]l ranges
 "        multiple lines.
+let s:Schedule = vital#highlightedyank#new().import('Schedule').augroup('highlightedyank-highlight')
 let s:Const = highlightedyank#constant#import()
 let s:Feature = s:Const.Feature
 let s:Type = s:Const.Type
@@ -10,6 +11,7 @@ let s:ON = 1
 let s:OFF = 0
 
 let s:STATE = s:ON
+let s:quenchtask = {}
 
 
 function! highlightedyank#debounce() abort
@@ -149,24 +151,14 @@ function! s:highlight_yanked_region(region) abort "{{{
   let hi_duration = s:get('highlight_duration', 1000)
   let timeout = s:get('timeout', 1000)
   let highlight = highlightedyank#highlight#new(a:region, timeout)
-  if highlight.empty()
+  if highlight.empty() || hi_duration == 0
     return
   endif
-  if hi_duration < 0
-    call s:persist(highlight, hi_group)
-  elseif hi_duration > 0
-    if s:Feature.TIMERS
-      call s:glow(highlight, hi_group, hi_duration)
-    else
-      let keyseq = s:blink(highlight, hi_group, hi_duration)
-      call feedkeys(keyseq, 'it')
-    endif
-  endif
-endfunction "}}}
-function! s:persist(highlight, hi_group) abort  "{{{
-  call highlightedyank#highlight#cancel()
-  if a:highlight.show(a:hi_group)
-    call a:highlight.persist()
+  if s:Feature.TIMERS || hi_duration < 0
+    call s:glow(highlight, hi_group, hi_duration)
+  else
+    let keyseq = s:blink(highlight, hi_group, hi_duration)
+    call feedkeys(keyseq, 'it')
   endif
 endfunction "}}}
 function! s:blink(highlight, hi_group, duration) abort "{{{
@@ -178,10 +170,23 @@ function! s:blink(highlight, hi_group, duration) abort "{{{
   return key
 endfunction "}}}
 function! s:glow(highlight, hi_group, duration) abort "{{{
-  call highlightedyank#highlight#cancel()
-  if a:highlight.show(a:hi_group)
-    call a:highlight.quench_timer(a:duration)
+  if !empty(s:quenchtask) && !s:quenchtask.hasdone()
+    call s:quenchtask.trigger()
   endif
+  if !a:highlight.show(a:hi_group)
+    return
+  endif
+
+  let switchtask = s:Schedule.Task()
+  call switchtask.repeat(-1)
+  call switchtask.call(a:highlight.switch, [], a:highlight)
+  call switchtask.waitfor(['BufEnter'])
+
+  let s:quenchtask = s:Schedule.Task()
+  call s:quenchtask.call(a:highlight.quench, [], a:highlight)
+  call s:quenchtask.call(switchtask.cancel, [], switchtask)
+  call s:quenchtask.waitfor([a:duration, ['TextChanged', '<buffer>'],
+    \ ['InsertEnter', '<buffer>'], ['BufUnload', '<buffer>']])
 endfunction "}}}
 function! s:wait_for_input(highlight, duration) abort  "{{{
   let clock = highlightedyank#clock#new()
