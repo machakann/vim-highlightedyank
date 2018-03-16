@@ -25,10 +25,16 @@ function! highlightedyank#debounce() abort "{{{
   let operator = v:event.operator
   let regtype = v:event.regtype
   let regcontents = v:event.regcontents
+  let marks = [line("'["), line("']"), col("'["), col("']")]
   if s:timer isnot -1
     call timer_stop(s:timer)
   endif
-  let marks = [line("'["), line("']"), col("'["), col("']")]
+
+  " NOTE: The timer callback would not be called while vim is busy, thus the
+  "       highlight procedure starts after the control has been returned to
+  "       user.
+  "       This makes complex-repeat faster because the highlight doesn't
+  "       performed in a macro execution.
   let s:timer = timer_start(1, {-> s:highlight(operator, regtype, regcontents, marks)})
 endfunction "}}}
 
