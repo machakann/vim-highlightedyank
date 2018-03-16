@@ -87,9 +87,7 @@ function! s:derive_region(regtype, regcontents) abort "{{{
     " NOTE: the width from v:event.regtype is not correct if 'clipboard' is
     "       unnamed or unnamedplus in windows
     " let width = str2nr(a:regtype[1:])
-    let curcol = col('.') - 1
-    let width = max(map(copy(a:regcontents), 'strdisplaywidth(v:val, curcol)'))
-    let region = s:derive_region_block(a:regcontents, width)
+    let region = s:derive_region_block(a:regcontents)
   else
     let region = deepcopy(s:NULLREGION)
   endif
@@ -134,13 +132,15 @@ function! s:derive_region_line(regcontents) abort "{{{
 endfunction "}}}
 
 
-function! s:derive_region_block(regcontents, width) abort "{{{
+function! s:derive_region_block(regcontents) abort "{{{
   let len = len(a:regcontents)
   if len == 0
     return deepcopy(s:NULLREGION)
   endif
 
   let curpos = getpos('.')
+  let curcol = curpos[2]
+  let width = max(map(copy(a:regcontents), 'strdisplaywidth(v:val, curcol)'))
   let region = deepcopy(s:NULLREGION)
   let region.wise = 'block'
   let region.head = getpos("'[")
@@ -148,10 +148,10 @@ function! s:derive_region_block(regcontents, width) abort "{{{
   if len > 1
     execute printf('normal! %sj', len - 1)
   endif
-  execute printf('normal! %s|', virtcol('.') + a:width - 1)
+  execute printf('normal! %s|', virtcol('.') + width - 1)
   let region.tail = getpos('.')
-  let region.blockwidth = a:width
-  if strdisplaywidth(getline('.')) < a:width
+  let region.blockwidth = width
+  if strdisplaywidth(getline('.')) < width
     let region.blockwidth = s:MAXCOL
   endif
   call setpos('.', curpos)
