@@ -14,6 +14,7 @@ let s:OFF = 0
 let s:HIGROUP = 'HighlightedyankRegion'
 
 let s:state = s:ON
+let s:timer = -1
 let s:quenchtask = {}
 
 
@@ -25,7 +26,7 @@ function! highlightedyank#debounce() abort "{{{
   let operator = v:event.operator
   let regtype = v:event.regtype
   let regcontents = v:event.regcontents
-  if exists('s:timer')
+  if s:timer isnot -1
     call timer_stop(s:timer)
   endif
   let marks = [line("'["), line("']"), col("'["), col("']")]
@@ -33,6 +34,7 @@ function! highlightedyank#debounce() abort "{{{
 endfunction "}}}
 
 function! s:highlight(operator, regtype, regcontents, marks) abort "{{{
+  let s:timer = -1
   if a:marks !=#  [line("'["), line("']"), col("'["), col("']")]
     return
   endif
