@@ -64,11 +64,11 @@ endfunction "}}}
 function! highlightedyank#obsolete#highlightedyank#on() abort "{{{
   let s:STATE = s:ON
   if stridx(&cpoptions, 'y') < 0
-    nnoremap <silent> <Plug>(highlightedyank) :<C-u>call highlightedyank#yank('n')<CR>
-    xnoremap <silent> <Plug>(highlightedyank) :<C-u>call highlightedyank#yank('x')<CR>
+    nnoremap <silent> <Plug>(highlightedyank) :<C-u>call highlightedyank#obsolete#highlightedyank#yank('n')<CR>
+    xnoremap <silent> <Plug>(highlightedyank) :<C-u>call highlightedyank#obsolete#highlightedyank#yank('x')<CR>
     onoremap          <Plug>(highlightedyank) y
   else
-    noremap  <expr>   <Plug>(highlightedyank-setoperatorfunc) highlightedyank#setoperatorfunc()
+    noremap  <expr>   <Plug>(highlightedyank-setoperatorfunc) highlightedyank#obsolete#highlightedyank#setoperatorfunc()
     nmap     <silent> <Plug>(highlightedyank) <Plug>(highlightedyank-setoperatorfunc)<Plug>(highlightedyank-g@)
     xmap     <silent> <Plug>(highlightedyank) <Plug>(highlightedyank-setoperatorfunc)<Plug>(highlightedyank-g@)
     onoremap          <Plug>(highlightedyank) g@
@@ -84,9 +84,9 @@ endfunction "}}}
 
 function! highlightedyank#obsolete#highlightedyank#toggle() abort "{{{
   if s:STATE is s:ON
-    call highlightedyank#off()
+    call highlightedyank#obsolete#highlightedyank#off()
   else
-    call highlightedyank#on()
+    call highlightedyank#obsolete#highlightedyank#on()
   endif
 endfunction "}}}
 
@@ -241,7 +241,7 @@ function! s:put_dummy_cursor(curpos) abort "{{{
     return {}
   endif
   let pos = {'head': a:curpos, 'tail': a:curpos, 'wise': 'char'}
-  let dummycursor = highlightedyank#highlight#new(pos)
+  let dummycursor = highlightedyank#obsolete#highlight#new(pos)
   call dummycursor.show('Cursor')
   redraw
   return dummycursor
@@ -265,7 +265,7 @@ function! s:highlight_yanked_region(region) abort "{{{
   let keyseq = ''
   let hi_group = 'HighlightedyankRegion'
   let hi_duration = s:get('highlight_duration', 1000)
-  let highlight = highlightedyank#highlight#new(a:region)
+  let highlight = highlightedyank#obsolete#highlight#new(a:region)
   if highlight.empty()
     return
   endif
@@ -284,7 +284,7 @@ endfunction "}}}
 
 function! s:persist(highlight, hi_group) abort  "{{{
   " highlight off: limit the number of highlighting region to one explicitly
-  call highlightedyank#highlight#cancel()
+  call highlightedyank#obsolete#highlight#cancel()
 
   if a:highlight.show(a:hi_group)
     call a:highlight.persist()
@@ -304,7 +304,7 @@ endfunction "}}}
 
 function! s:glow(highlight, hi_group, duration) abort "{{{
   " highlight off: limit the number of highlighting region to one explicitly
-  call highlightedyank#highlight#cancel()
+  call highlightedyank#obsolete#highlight#cancel()
   if a:highlight.show(a:hi_group)
     call a:highlight.quench_timer(a:duration)
   endif
