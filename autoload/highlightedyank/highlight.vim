@@ -1,6 +1,4 @@
 " highlight object - managing highlight on a buffer
-let s:Schedule = vital#highlightedyank#new().import('Schedule')
-                  \.augroup('highlightedyank-highlight')
 let s:NULLPOS = [0, 0, 0, 0]
 let s:MAXCOL = 2147483647
 let s:ON = 1
@@ -71,45 +69,8 @@ function! s:highlight.quench() dict abort "{{{
   if self.status is s:OFF
     return 0
   endif
-
-  if win_getid() == self.winid
-    " current window
-    call map(self.id, 'matchdelete(v:val)')
-    call filter(self.id, 'v:val > 0')
-    let succeeded = 1
-  else
-    " move to another window
-    let original_winid = win_getid()
-    let view = winsaveview()
-
-    if s:is_in_cmdline_window()
-      " cannot move out from commandline-window
-      " quench later
-      let quenchtask = s:Schedule.TaskChain()
-      call quenchtask.hook(['CmdWinLeave'])
-      call quenchtask.hook([1]).call(self.quench, [], self)
-      call quenchtask.waitfor()
-      let succeeded = 0
-    else
-      noautocmd let reached = win_gotoid(self.winid)
-      if reached
-        " reached to the highlighted buffer
-        call map(self.id, 'matchdelete(v:val)')
-        call filter(self.id, 'v:val > 0')
-      else
-        " highlighted buffer does not exist
-        call filter(self.id, 0)
-      endif
-      let succeeded = 1
-      noautocmd call win_gotoid(original_winid)
-      call winrestview(view)
-    endif
-  endif
-
-  if succeeded
-    let self.status = s:OFF
-  endif
-  return succeeded
+  call map(self.id, 'matchdelete(v:val)')
+  call filter(self.id, 'v:val > 0')
 endfunction "}}}
 
 
@@ -236,11 +197,6 @@ endfunction "}}}
 
 function! s:is_ahead(pos1, pos2) abort  "{{{
   return a:pos1[1] > a:pos2[1] || (a:pos1[1] == a:pos2[1] && a:pos1[2] > a:pos2[2])
-endfunction "}}}
-
-
-function! s:is_in_cmdline_window() abort "{{{
-  return getcmdwintype() !=# ''
 endfunction "}}}
 
 " vim:set foldmethod=marker:

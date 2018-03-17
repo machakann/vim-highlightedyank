@@ -197,16 +197,53 @@ function! s:glow(region, hi_group, duration) abort "{{{
   call switchtask.waitfor(['BufEnter'])
 
   let s:quenchtask = s:Schedule.Task()
-  call s:quenchtask.call(highlight.quench, [], highlight)
+  call s:quenchtask.call(funcref('s:quench'), [highlight])
   call s:quenchtask.call(switchtask.cancel, [], switchtask)
   call s:quenchtask.waitfor([a:duration, ['TextChanged', '<buffer>'],
     \ ['InsertEnter', '<buffer>'], ['BufUnload', '<buffer>']])
 endfunction "}}}
 
 
+function! s:quench(highlight) abort "{{{
+  if win_getid() == a:highlight.winid
+    " current window
+    call a:highlight.quench()
+  else
+    " move to another window
+    let original_winid = win_getid()
+    let view = winsaveview()
+
+    if s:is_in_cmdline_window()
+      " cannot move out from commandline-window
+      " quench later
+      let quenchtask = s:Schedule.TaskChain()
+      call quenchtask.hook(['CmdWinLeave'])
+      call quenchtask.hook([1]).call(a:highlight.quench, [], a:highlight)
+      call quenchtask.waitfor()
+    else
+      noautocmd let reached = win_gotoid(a:highlight.winid)
+      if reached
+        " reached to the highlighted buffer
+        call a:highlight.quench()
+      else
+        " highlighted buffer does not exist
+        call filter(a:highlight.id, 0)
+      endif
+      noautocmd call win_gotoid(original_winid)
+      call winrestview(view)
+    endif
+  endif
+endfunction "}}}
+
+
 function! s:get(name, default) abort  "{{{
   let identifier = 'highlightedyank_' . a:name
   return get(b:, identifier, get(g:, identifier, a:default))
+endfunction "}}}
+
+
+function! s:is_in_cmdline_window() abort "{{{
+  return getcmdwintype() !=# ''
 endfunction "}}}
 
 " vim:set foldmethod=marker:
