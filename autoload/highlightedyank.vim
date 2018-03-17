@@ -199,8 +199,9 @@ function! s:glow(region, hi_group, duration) abort "{{{
   let s:quenchtask = s:Schedule.Task()
   call s:quenchtask.call(funcref('s:quench'), [highlight])
   call s:quenchtask.call(switchtask.cancel, [], switchtask)
-  call s:quenchtask.waitfor([a:duration, ['TextChanged', '<buffer>'],
-    \ ['InsertEnter', '<buffer>'], ['BufUnload', '<buffer>']])
+  call s:quenchtask.waitfor([a:duration,
+    \ ['TextChanged', '<buffer>'], ['InsertEnter', '<buffer>'],
+    \ ['BufUnload', '<buffer>'], ['CmdwinLeave', '<buffer>']])
 endfunction "}}}
 
 
