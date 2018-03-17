@@ -138,7 +138,7 @@ function! s:highlight_order_linewise(region) abort  "{{{
   let order_list = []
   let n = 0
   for lnum in range(a:region.head[1], a:region.tail[1])
-    let order += [[lnum]]
+    let order += [lnum]
     if n == 7
       let order_list += [order]
       let order = []
