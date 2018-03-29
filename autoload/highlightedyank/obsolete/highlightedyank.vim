@@ -272,7 +272,7 @@ function! s:highlight_yanked_region(region) abort "{{{
   if hi_duration < 0
     call s:persist(highlight, hi_group)
   elseif hi_duration > 0
-    if s:HAS_GUI_RUNNING
+    if s:HAS_TIMERS
       call s:glow(highlight, hi_group, hi_duration)
     else
       let keyseq = s:blink(highlight, hi_group, hi_duration)
