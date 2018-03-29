@@ -71,6 +71,7 @@ function! s:highlight.quench() dict abort "{{{
   endif
   call map(self.id, 'matchdelete(v:val)')
   call filter(self.id, 'v:val > 0')
+  return 1
 endfunction "}}}
 
 
