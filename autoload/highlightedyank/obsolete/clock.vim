@@ -3,7 +3,7 @@ let s:HAS_RELTIME_AND_FLOAT = has('reltime') && has('float')
 
 
 
-function! highlightedyank#clock#new() abort  "{{{
+function! highlightedyank#obsolete#clock#new() abort  "{{{
   return deepcopy(s:clock)
 endfunction "}}}
 
