@@ -201,7 +201,8 @@ function! s:glow(region, hi_group, duration) abort "{{{
   call s:quenchtask.call(switchtask.cancel, [], switchtask)
   call s:quenchtask.waitfor([a:duration,
     \ ['TextChanged', '<buffer>'], ['InsertEnter', '<buffer>'],
-    \ ['BufUnload', '<buffer>'], ['CmdwinLeave', '<buffer>']])
+    \ ['BufUnload', '<buffer>'], ['CmdwinLeave', '<buffer>'],
+    \ ['TabLeave', '*']])
 endfunction "}}}
 
 
