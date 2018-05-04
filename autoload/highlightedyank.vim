@@ -190,6 +190,9 @@ function! s:glow(region, hi_group, duration) abort "{{{
   if !highlight.show(a:hi_group)
     return
   endif
+  if !has('patch-8.0.1476') && has('patch-8.0.1449')
+    redraw
+  endif
 
   let switchtask = s:Schedule.Task()
   call switchtask.repeat(-1)
@@ -234,6 +237,10 @@ function! s:quench(highlight) abort "{{{
       noautocmd call win_gotoid(original_winid)
       call winrestview(view)
     endif
+  endif
+
+  if !has('patch-8.0.1476') && has('patch-8.0.1449')
+    redraw
   endif
 endfunction "}}}
 
