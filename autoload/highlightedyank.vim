@@ -165,13 +165,20 @@ endfunction "}}}
 
 function! s:modify_region(region) abort "{{{
   " for multibyte characters
-  if a:region.tail[2] != col([a:region.tail[1], '$']) && a:region.tail[3] == 0
-    let cursor = getpos('.')
-    call setpos('.', a:region.tail)
-    call search('\%(^\|.\)', 'bc')
-    let a:region.tail = getpos('.')
-    call setpos('.', cursor)
+  if a:region.tail[2] == col([a:region.tail[1], '$']) || a:region.tail[3] != 0
+    return a:region
   endif
+
+  let cursor = getpos('.')
+  call setpos('.', a:region.tail)
+  let letterhead = searchpos('\zs', 'bcn', line('.'))
+  if letterhead[1] > a:region.tail[2]
+    " try again without 'c' flag if letterhead is behind the original
+    " position. It may look strange but it happens with &enc ==# 'cp932'
+    let letterhead = searchpos('\zs', 'bn', line('.'))
+  endif
+  let a:region.tail[1:2] = letterhead
+  call setpos('.', cursor)
   return a:region
 endfunction "}}}
 
