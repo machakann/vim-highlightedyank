@@ -1,5 +1,5 @@
 *highlightedyank.txt*	ヤンクした場所をわかりやすくする。
-						Last change:16-Mar-2018.
+						Last change:26-Sep-2018.
 
 書いた人   : machakann <mckn{at}outlook.jp>
 ライセンス : NYSL ライセンス
@@ -82,6 +82,10 @@ HighlightedyankRegion				*hl-HighlightedyankRegion*
 	highlight HighlightedyankRegion ctermbg=237 guibg=#404040
 <
 	より詳しくは |:highlight| を参照してください。
+
+	ただし、再定義は vimrc の中の |:colorscheme| 以降で行われる必要があり
+	ます。
+
 ==============================================================================
 COMMANDS				*highlightedyank-commands*
 

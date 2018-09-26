@@ -38,8 +38,10 @@ When a new text is yanked or user starts editing, the old highlighting would be 
 If the highlight is not visible for some reason, you can redefine the `HighlightedyankRegion` highlight group like:
 
 ```
-hi HighlightedyankRegion cterm=reverse gui=reverse
+highlight HighlightedyankRegion cterm=reverse gui=reverse
 ```
+
+Note that the line should be located after `:colorscheme` command execution in your vimrc.
 
 ## Inspired by
 
