@@ -203,17 +203,20 @@ function! s:glow(region, hi_group, duration) abort "{{{
   endif
 
   let switchtask = s:Schedule.Task()
-  call switchtask.repeat(-1)
-  call switchtask.call(highlight.switch, [], highlight)
-  call switchtask.waitfor(['BufEnter'])
+                            \.call(highlight.switch, [], highlight)
+                            \.repeat(-1)
+                            \.waitfor(['BufEnter'])
 
   let s:quenchtask = s:Schedule.Task()
-  call s:quenchtask.call(highlight.quench, [], highlight)
-  call s:quenchtask.call(switchtask.cancel, [], switchtask)
-  call s:quenchtask.waitfor([a:duration,
-    \ ['TextChanged', '<buffer>'], ['InsertEnter', '<buffer>'],
-    \ ['BufUnload', '<buffer>'], ['CmdwinLeave', '<buffer>'],
-    \ ['TabLeave', '*']])
+                              \.call(highlight.quench, [], highlight)
+                              \.call(switchtask.cancel, [], switchtask)
+                              \.repeat(1)
+                              \.waitfor([a:duration,
+                              \   ['TextChanged', '<buffer>'],
+                              \   ['InsertEnter', '<buffer>'],
+                              \   ['BufUnload', '<buffer>'],
+                              \   ['CmdwinLeave', '<buffer>'],
+                              \   ['TabLeave', '*']])
 endfunction "}}}
 
 
