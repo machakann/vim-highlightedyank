@@ -1,4 +1,6 @@
 " highlight object - managing highlight on a buffer
+let s:Schedule = vital#highlightedyank#new().import('Schedule')
+                  \.augroup('highlightedyank-highlight')
 let s:NULLPOS = [0, 0, 0, 0]
 let s:MAXCOL = 2147483647
 let s:ON = 1
@@ -19,7 +21,7 @@ function! highlightedyank#highlight#new(region) abort  "{{{
 endfunction "}}}
 
 
-" Highlight class {{{
+" Highlight object {{{
 let s:highlight = {
   \   'status': s:OFF,
   \   'group': '',
@@ -65,12 +67,58 @@ function! s:highlight.show(...) dict abort "{{{
 endfunction "}}}
 
 
+function! s:highlight.is_in_highlight_window() abort "{{{
+  return win_getid() == self.winid
+endfunction "}}}
+
+
+function! s:highlight._quench_now() abort "{{{
+  if self.is_in_highlight_window()
+    " current window
+    call map(self.id, 'matchdelete(v:val)')
+    call filter(self.id, 'v:val > 0')
+  else
+    " move to another window
+    let original_winid = win_getid()
+    let view = winsaveview()
+
+    noautocmd let reached = win_gotoid(self.winid)
+    if reached
+      " reached to the highlighted buffer
+      call map(self.id, 'matchdelete(v:val)')
+      call filter(self.id, 'v:val > 0')
+    else
+      " highlighted buffer does not exist
+      call filter(self.id, 0)
+    endif
+    noautocmd call win_gotoid(original_winid)
+    call winrestview(view)
+  endif
+endfunction "}}}
+
+
+function! s:highlight._quench_by_CmdWinLeave() abort "{{{
+  let quenchtask = s:Schedule.TaskChain()
+  call quenchtask.hook(['CmdWinLeave'])
+  call quenchtask.hook([1]).call(self.quench, [], self)
+  call quenchtask.waitfor()
+endfunction "}}}
+
+
 function! s:highlight.quench() dict abort "{{{
   if self.status is s:OFF
     return 0
   endif
-  call map(self.id, 'matchdelete(v:val)')
-  call filter(self.id, 'v:val > 0')
+  if s:is_in_cmdline_window() && !self.is_in_highlight_window()
+    " NOTE: cannot move out from commandline-window
+    call self._quench_by_CmdWinLeave()
+    return 0
+  endif
+
+  call self._quench_now()
+  if !has('patch-8.0.1476') && has('patch-8.0.1449')
+    redraw
+  endif
   return 1
 endfunction "}}}
 
@@ -90,6 +138,11 @@ endfunction "}}}
 
 function! s:highlight.empty() abort "{{{
   return empty(self.order_list)
+endfunction "}}}
+
+
+function! s:is_in_cmdline_window() abort "{{{
+  return getcmdwintype() !=# ''
 endfunction "}}}
 "}}}
 
