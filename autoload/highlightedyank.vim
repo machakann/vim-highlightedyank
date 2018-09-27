@@ -194,7 +194,8 @@ function! s:glow(region, hi_group, duration) abort "{{{
   if !empty(s:quenchtask) && !s:quenchtask.hasdone()
     call s:quenchtask.trigger()
   endif
-  if !highlight.show(a:hi_group)
+  let succeeded = highlight.show(a:hi_group)
+  if !succeeded
     return
   endif
   if !has('patch-8.0.1476') && has('patch-8.0.1449')
