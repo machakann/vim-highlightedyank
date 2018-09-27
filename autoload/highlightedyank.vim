@@ -186,15 +186,15 @@ endfunction "}}}
 let s:quenchtask = {}
 
 function! s:glow(region, hi_group, duration) abort "{{{
-  let highlight = highlightedyank#highlight#new(a:region)
-  if highlight.empty()
+  let highlight = highlightedyank#highlight#new(a:hi_group, a:region)
+  if empty(highlight)
     return
   endif
 
   if !empty(s:quenchtask) && !s:quenchtask.hasdone()
     call s:quenchtask.trigger()
   endif
-  let succeeded = highlight.show(a:hi_group)
+  let succeeded = highlight.show()
   if !succeeded
     return
   endif

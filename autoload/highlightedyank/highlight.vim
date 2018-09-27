@@ -8,15 +8,22 @@ let s:OFF = 0
 
 
 
-function! highlightedyank#highlight#new(region) abort  "{{{
-  let highlight = deepcopy(s:highlight)
+function! highlightedyank#highlight#new(hi_group, region) abort  "{{{
+  let order_list = []
   if a:region.wise ==# 'char' || a:region.wise ==# 'v'
-    let highlight.order_list = s:highlight_order_charwise(a:region)
+    let order_list += s:highlight_order_charwise(a:region)
   elseif a:region.wise ==# 'line' || a:region.wise ==# 'V'
-    let highlight.order_list = s:highlight_order_linewise(a:region)
+    let order_list += s:highlight_order_linewise(a:region)
   elseif a:region.wise ==# 'block' || a:region.wise[0] ==# "\<C-v>"
-    let highlight.order_list = s:highlight_order_blockwise(a:region)
+    let order_list += s:highlight_order_blockwise(a:region)
   endif
+  if empty(order_list)
+    return {}
+  endif
+
+  let highlight = deepcopy(s:highlight)
+  let highlight.group = a:hi_group
+  let highlight.order_list = order_list
   return highlight
 endfunction "}}}
 
@@ -32,37 +39,42 @@ let s:highlight = {
   \ }
 
 
-function! s:highlight.show(...) dict abort "{{{
+function! s:highlight.show() dict abort "{{{
   if empty(self.order_list)
     return 0
   endif
 
-  if a:0 < 1
-    if empty(self.group)
-      return 0
-    else
-      let hi_group = self.group
-    endif
-  else
-    let hi_group = a:1
-  endif
-
   if self.status is s:ON
-    if hi_group ==# self.group
-      return 0
-    else
-      call self.quench()
-    endif
+    call self.quench()
   endif
-
   for order in self.order_list
-    let self.id += [matchaddpos(hi_group, order)]
+    let self.id += [matchaddpos(self.group, order)]
   endfor
   call filter(self.id, 'v:val > 0')
   let self.status = s:ON
-  let self.group = hi_group
   let self.bufnr = bufnr('%')
   let self.winid = win_getid()
+  return 1
+endfunction "}}}
+
+
+function! s:highlight.quench() dict abort "{{{
+  if self.status is s:OFF
+    return 0
+  endif
+  if s:is_in_cmdline_window() && !self.is_in_highlight_window()
+    " NOTE: cannot move out from commandline-window
+    call self._quench_by_CmdWinLeave()
+    return 0
+  endif
+
+  call self._quench_now()
+  let self.status = s:OFF
+  let self.bufnr = 0
+  let self.winid = 0
+  if !has('patch-8.0.1476') && has('patch-8.0.1449')
+    redraw
+  endif
   return 1
 endfunction "}}}
 
@@ -105,21 +117,8 @@ function! s:highlight._quench_by_CmdWinLeave() abort "{{{
 endfunction "}}}
 
 
-function! s:highlight.quench() dict abort "{{{
-  if self.status is s:OFF
-    return 0
-  endif
-  if s:is_in_cmdline_window() && !self.is_in_highlight_window()
-    " NOTE: cannot move out from commandline-window
-    call self._quench_by_CmdWinLeave()
-    return 0
-  endif
-
-  call self._quench_now()
-  if !has('patch-8.0.1476') && has('patch-8.0.1449')
-    redraw
-  endif
-  return 1
+function! s:is_in_cmdline_window() abort "{{{
+  return getcmdwintype() !=# ''
 endfunction "}}}
 
 
@@ -133,16 +132,6 @@ function! s:highlight.switch() abort "{{{
   else
     call self.quench()
   endif
-endfunction "}}}
-
-
-function! s:highlight.empty() abort "{{{
-  return empty(self.order_list)
-endfunction "}}}
-
-
-function! s:is_in_cmdline_window() abort "{{{
-  return getcmdwintype() !=# ''
 endfunction "}}}
 "}}}
 
