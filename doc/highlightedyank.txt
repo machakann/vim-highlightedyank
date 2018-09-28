@@ -1,5 +1,5 @@
 *highlightedyank.txt*	Make the yanked region apparent!
-						Last change:26-Sep-2018.
+						Last change:28-Sep-2018.
 
 Author  : machakann <mckn{at}outlook.jp>
 License : NYSL license
@@ -15,6 +15,7 @@ Requirement:	Vim 7.4 or higher
 INDEX					*highlightedyank-index*
 
 INTRODUCTION				|highlightedyank-introduction|
+OPTIONS					|highlightedyank-options|
 HIGHLIGHT GROUPS			|highlightedyank-highlight-groups|
 COMMANDS				|highlightedyank-commands|
 KNOWN ISSUES				|highlightedyank-known-issues|
@@ -22,77 +23,75 @@ KNOWN ISSUES				|highlightedyank-known-issues|
 ==============================================================================
 INTRODUCTION				*highlightedyank-introduction*
 
-*highlightedyank.vim* is a plugin to just highlight a region where user yanks.
-That is a pretty trick to make your coding easier.
+*highlightedyank.vim* is a plugin to highlight the yanked region.
+This is a pretty trick to make your coding more comfortable.
 
 If you are using Vim 8.0.1934 or later, or neovim <https://neovim.io/>,
 there is no need for configuration, as the highlight event is automatically
 triggered by |TextYankPost| event.
 
-Otherwise define a keymapping to `<Plug>(highlightedyank)`. It would be good
-to check the existence of |TextYankPost| event.
+Otherwise, it is required to define a keymapping to `<Plug>(highlightedyank)`.
+It would be good to check the existence of |TextYankPost| event.
 >
 	if !exists('##TextYankPost')
 	  map y <Plug>(highlightedyank)
 	endif
 <
-The highlight duration can be optimized by
-*g:highlightedyank_highlight_duration* ,
-*b:highlightedyank_highlight_duration* .
-Assign number of time in milli seconds.
+==============================================================================
+OPTIONS					*highlightedyank-options*
+
+					*g:highlightedyank_highlight_duration*
+					*b:highlightedyank_highlight_duration*
+This option changes the highlighting duration.
+Assign a number of time in milli seconds.
 >
 	let g:highlightedyank_highlight_duration = 1000
 <
-If a negative number is assigned, the highlight would get persistent.
+If a negative number is assigned, the highlight gets persistent.
 >
 	let g:highlightedyank_highlight_duration = -1
 <
-When a new text is yanked, the old highlighting would be deleted. Or when
-former lines are edited, the highlighting would be deleted to prevent shifting
-the position, also.
+When another text is yanked or when the user starts editing, the old
+highlighting will be deleted.
 
 ------------------------------------------------------------------------------
 
-The highlight process could be slow when you yanked a wide region. Thus, this
-plugin has the safety to avoid the problem.
+The highlight process could be very slow when the user yanked a bunch of
+lines. This plugin has an option to avoid the problem.
 
 					*g:highlightedyank_max_lines*
 					*b:highlightedyank_max_lines*
-|g:highlightedyank_max_lines| and |b:highlightedyank_max_lines| enables to set
-a threshold number of lines to give up highlighting. The following line in
-vimrc make this plugin to give up over one thousand lines.
+This plugin gives up highlighting if the yanked lines exceeds the number.
+Adding the following line into your vimrc to give up over one thousand lines.
 >
 	let g:highlightedyank_max_lines = 1000
 <
-If both of those variables are not defined, it gives up over 10000 lines.
+The default value is 10000 lines.
 
 ==============================================================================
 HIGHLIGHT GROUPS			*highlightedyank-highlight-groups*
 
-If you want to change the highlighting color, re-define the following
-highlight group.
+In order to change the highlighting color, re-define the following highlight
+group.
 
-	The highlight group is to define the highlight for yanked region.
-	It is linked to a highlight group IncSearch |hl-IncSearch| in default.
+	The highlight group to make the yanked region noticeable.
+	It is linked to the highlight group IncSearch by default.
+	|hl-IncSearch|
 >
 	highlight link HighlightedyankRegion IncSearch
 <
-	If you want to asign the color directly, then:
+	In order to asign the color directly:
 >
 	highlight HighlightedyankRegion ctermbg=237 guibg=#404040
 <
-	See |:highlight| help for more details.
-
-	NOTE that the line should be located after |:colorscheme| command
-	execution in your vimrc.
+	See |:highlight| help for more details. NOTE that the line should be
+	located after |:colorscheme| command execution in your vimrc.
 
 ==============================================================================
 COMMANDS				*highlightedyank-commands*
 
 :HighlightedyankOff				*:HighlightedyankOff*
-	This command stops highlighting temporarily. The highlight is a
-	relatively heavy process. Thus it may reduce processing time when
-	using |complex-repeat| to edit a lot of strings in a buffer.
+	This command stops highlighting temporarily.
 
 :HighlightedyankOn				*:HighlightedyankOn*
 	This command (re)starts highlighting stopped by |:HighlightedyankOff|.

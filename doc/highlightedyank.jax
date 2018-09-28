@@ -1,5 +1,5 @@
 *highlightedyank.txt*	ヤンクした場所をわかりやすくする。
-						Last change:26-Sep-2018.
+						Last change:28-Sep-2018.
 
 書いた人   : machakann <mckn{at}outlook.jp>
 ライセンス : NYSL ライセンス
@@ -15,6 +15,7 @@
 INDEX					*highlightedyank-index*
 
 INTRODUCTION				|highlightedyank-introduction|
+OPTIONS					|highlightedyank-options|
 HIGHLIGHT GROUPS			|highlightedyank-highlight-groups|
 KNOWN ISSUES				|highlightedyank-known-issues|
 
@@ -24,8 +25,9 @@ INTRODUCTION				*highlightedyank-introduction*
 *highlightedyank.vim* はユーザーのヤンクした箇所をハイライトするだけのプラグイ
 ンです。あなたのコーディング作業にほんの少しの彩りを加えます。
 
-Vim 8.0.1934 か neovim <https://neovim.io/> を使用している場合はインストールす
-るだけで使えます。ハイライト処理は |TextYankPost| イベントにより実行されます。
+Vim 8.0.1934 かそれよりも新しいバージョン、あるいは
+neovim <https://neovim.io/> を使用している場合はインストールするだけで使えま
+す。ハイライト処理は |TextYankPost| イベントにより実行されます。
 
 |TextYankPost| イベントが使えない場合も次の行を vimrc に書き加えると使えます。
 |TextYankPost| が存在するか確認するようにするとよいでしょう。
@@ -34,6 +36,9 @@ Vim 8.0.1934 か neovim <https://neovim.io/> を使用している場合はイ�
 	  map y <Plug>(highlightedyank)
 	endif
 <
+
+==============================================================================
+OPTIONS					*highlightedyank-options*
 
 ハイライトの持続時間は次の変数を通して変更できます。
 *g:highlightedyank_highlight_duration*
@@ -90,9 +95,7 @@ HighlightedyankRegion				*hl-HighlightedyankRegion*
 COMMANDS				*highlightedyank-commands*
 
 :HighlightedyankOff				*:HighlightedyankOff*
-	ハイライト機能を一時停止します。ハイライトは比較的重い処理です。そのた
-	め、 |complex-repeat| を使用して大量のテキストを編集する場合などに使用
-	することで処理時間を短縮できるでしょう。
+	ハイライト機能を一時停止します。
 
 :HighlightedyankOn				*:HighlightedyankOn*
 	|:HighlightedyankOff| コマンドによって停止していたハイライト機能を再開
