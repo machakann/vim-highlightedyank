@@ -69,16 +69,18 @@ function! s:highlight(operator, regtype, regcontents, marks) abort "{{{
     return
   endif
 
-  let view = winsaveview()
   let region = s:derive_region(a:regtype, a:regcontents)
   let maxlinenumber = s:get('max_lines', 10000)
-  if region.tail[1] - region.head[1] + 1 <= maxlinenumber
-    let hi_duration = s:get('highlight_duration', 1000)
-    if hi_duration != 0
-      call s:glow(region, s:HIGROUP, hi_duration)
-    endif
+  if region.tail[1] - region.head[1] + 1 > maxlinenumber
+    return
   endif
-  call winrestview(view)
+
+  let hi_duration = s:get('highlight_duration', 1000)
+  if hi_duration == 0
+    return
+  endif
+
+  call s:glow(region, s:HIGROUP, hi_duration)
 endfunction "}}}
 
 
@@ -142,8 +144,8 @@ function! s:derive_region_block(regcontents) abort "{{{
     return deepcopy(s:NULLREGION)
   endif
 
-  let curpos = getpos('.')
-  let curcol = curpos[2]
+  let view = winsaveview()
+  let curcol = col('.')
   let width = max(map(copy(a:regcontents), 'strdisplaywidth(v:val, curcol)'))
   let region = deepcopy(s:NULLREGION)
   let region.wise = 'block'
@@ -158,7 +160,7 @@ function! s:derive_region_block(regcontents) abort "{{{
   if strdisplaywidth(getline('.')) < width
     let region.blockwidth = s:MAXCOL
   endif
-  call setpos('.', curpos)
+  call winrestview(view)
   return s:modify_region(region)
 endfunction "}}}
 
