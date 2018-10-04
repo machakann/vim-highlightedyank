@@ -184,11 +184,6 @@ function! s:get(name, default) abort  "{{{
   return get(b:, identifier, get(g:, identifier, a:default))
 endfunction "}}}
 
-
-function! s:is_in_cmdline_window() abort "{{{
-  return getcmdwintype() !=# ''
-endfunction "}}}
-
 " vim:set foldmethod=marker:
 " vim:set commentstring="%s:
 " vim:set ts=2 sts=2 sw=2:
