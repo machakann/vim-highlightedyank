@@ -184,6 +184,10 @@ let s:highlight = {
 
 " Start to show the highlight
 function! s:highlight.add(...) dict abort "{{{
+  let duration = get(a:000, 0, -1)
+  if duration == 0
+    return
+  end
   if empty(self.order_list)
     return
   endif
@@ -201,14 +205,10 @@ function! s:highlight.add(...) dict abort "{{{
   call self.switchtask.call(self.switch, [], self)
                      \.repeat(-1)
                      \.waitfor(['BufEnter'])
-
   let triggers = [['TextChanged', '<buffer>'], ['InsertEnter', '<buffer>'],
                \  ['BufUnload', '<buffer>'], ['CmdwinLeave', '<buffer>'],
                \  ['TabLeave', '*']]
-  let duration = get(a:000, 0, -1)
-  if duration == 0
-    return
-  elseif duration > 0
+  if duration > 0
     call add(triggers, duration)
   endif
   call self.quenchtask.call(self.delete, [], self)
