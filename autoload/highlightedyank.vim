@@ -57,7 +57,7 @@ endfunction "}}}
 
 function! s:highlight(operator, regtype, regcontents, marks) abort "{{{
   let s:timer = -1
-  if a:operator !=# 'y' || a:regtype ==# ''
+  if a:operator isnot# 'y' || a:regtype is# ''
     return
   endif
   if a:marks !=#  [line("'["), line("']"), col("'["), col("']")]
@@ -84,11 +84,11 @@ endfunction "}}}
 
 
 function! s:get_region(regtype, regcontents) abort "{{{
-  if a:regtype ==# 'v'
+  if a:regtype is# 'v'
     return s:get_region_char(a:regcontents)
-  elseif a:regtype ==# 'V'
+  elseif a:regtype is# 'V'
     return s:get_region_line(a:regcontents)
-  elseif a:regtype[0] ==# "\<C-v>"
+  elseif a:regtype[0] is# "\<C-v>"
     " NOTE: the width from v:event.regtype is not correct if 'clipboard' is
     "       unnamed or unnamedplus in windows
     " let width = str2nr(a:regtype[1:])
