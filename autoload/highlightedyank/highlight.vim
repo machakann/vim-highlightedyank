@@ -192,9 +192,7 @@ function! s:highlight.add(...) dict abort "{{{
     return
   endif
 
-  if self.status is s:ON
-    call self.delete()
-  endif
+  call self.delete()
   for order in self.order_list
     let self.id += [matchaddpos(self.group, order)]
   endfor
