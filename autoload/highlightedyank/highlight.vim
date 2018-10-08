@@ -282,7 +282,7 @@ endfunction "}}}
 
 
 function! s:is_in_cmdline_window() abort "{{{
-  return getcmdwintype() is# ''
+  return getcmdwintype() isnot# ''
 endfunction "}}}
 
 
