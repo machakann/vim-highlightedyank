@@ -251,8 +251,7 @@ endfunction "}}}
 function! s:highlight._quench_now() abort "{{{
   if self.is_in_highlight_window()
     " current window
-    call map(self.id, 'matchdelete(v:val)')
-    call filter(self.id, 'v:val > 0')
+    call s:matchdelete_all(self.id)
   else
     " move to another window
     let original_winid = win_getid()
@@ -261,8 +260,7 @@ function! s:highlight._quench_now() abort "{{{
     noautocmd let reached = win_gotoid(self.winid)
     if reached
       " reached to the highlighted buffer
-      call map(self.id, 'matchdelete(v:val)')
-      call filter(self.id, 'v:val > 0')
+      call s:matchdelete_all(self.id)
     else
       " highlighted buffer does not exist
       call filter(self.id, 0)
@@ -297,6 +295,31 @@ function! s:highlight.switch() abort "{{{
   else
     call self.delete()
   endif
+endfunction "}}}
+
+
+function! s:matchdelete_all(ids) abort "{{{
+  if empty(a:ids)
+    return
+  endif
+
+  let alive_ids = map(getmatches(), 'v:val.id')
+  if empty(alive_ids)
+    return
+  endif
+  " Return if another plugin called clearmatches() which clears *ALL*
+  " highlights including others set.
+  if !count(alive_ids, a:ids[0])
+    return
+  endif
+
+  for id in a:ids
+    try
+      call matchdelete(id)
+    catch
+    endtry
+  endfor
+  call filter(a:ids, 0)
 endfunction "}}}
 "}}}
 
