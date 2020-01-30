@@ -304,11 +304,11 @@ function! s:matchdelete_all(ids) abort "{{{
   endif
 
   let alive_ids = map(getmatches(), 'v:val.id')
+  " Return if another plugin called clearmatches() which clears *ALL*
+  " highlights including others set.
   if empty(alive_ids)
     return
   endif
-  " Return if another plugin called clearmatches() which clears *ALL*
-  " highlights including others set.
   if !count(alive_ids, a:ids[0])
     return
   endif
