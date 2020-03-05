@@ -203,8 +203,8 @@ function! s:highlight.add(...) dict abort "{{{
   call self.switchtask.call(self.switch, [], self)
                      \.repeat(-1)
                      \.waitfor(['BufEnter'])
-  let triggers = [['TextChanged', '<buffer>'], ['InsertEnter', '<buffer>'],
-               \  ['BufUnload', '<buffer>'], ['CmdwinLeave', '<buffer>'],
+  let triggers = [['BufUnload', '<buffer>'], ['CmdwinLeave', '<buffer>'],
+               \  ['TextChanged', '*'], ['InsertEnter', '*'],
                \  ['TabLeave', '*']]
   if duration > 0
     call add(triggers, duration)
