@@ -7,6 +7,7 @@ let s:MAXCOL = 2147483647
 let s:ON = 1
 let s:OFF = 0
 let s:HIGROUP = 'HighlightedyankRegion'
+let s:HIGROUP_CLIPBOARD = 'HighlightedyankRegionClipboard'
 
 
 
@@ -21,6 +22,7 @@ function! highlightedyank#debounce() abort "{{{
   let operator = v:event.operator
   let regtype = v:event.regtype
   let regcontents = v:event.regcontents
+  let regname = v:event.regname
   let marks = [line("'["), line("']"), col("'["), col("']")]
   if s:timer isnot -1
     call timer_stop(s:timer)
@@ -30,7 +32,7 @@ function! highlightedyank#debounce() abort "{{{
   "       highlight procedure starts after the control is returned to the user.
   "       This makes complex-repeat faster because the highlight doesn't
   "       performed during a macro execution.
-  let s:timer = timer_start(1, {-> s:highlight(operator, regtype, regcontents, marks)})
+  let s:timer = timer_start(1, {-> s:highlight(operator, regtype, regname, regcontents, marks)})
 endfunction "}}}
 
 
@@ -55,7 +57,7 @@ function! highlightedyank#toggle() abort "{{{
 endfunction "}}}
 
 
-function! s:highlight(operator, regtype, regcontents, marks) abort "{{{
+function! s:highlight(operator, regtype, regname, regcontents, marks) abort "{{{
   let s:timer = -1
   if a:operator isnot# 'y' || a:regtype is# ''
     return
@@ -79,7 +81,8 @@ function! s:highlight(operator, regtype, regcontents, marks) abort "{{{
     return
   endif
 
-  call highlightedyank#highlight#add(s:HIGROUP, start, end, type, hi_duration)
+  let hi_group = ['*', '+']->index(a:regname) == -1 ? s:HIGROUP : s:HIGROUP_CLIPBOARD
+  call highlightedyank#highlight#add(hi_group, start, end, type, hi_duration)
 endfunction "}}}
 
 
