@@ -1,5 +1,5 @@
 *highlightedyank.txt*	Make the yanked region apparent!
-						Last change:28-Sep-2018.
+						Last change:25-Jan-2022.
 
 Author  : machakann <mckn{at}outlook.jp>
 License : NYSL license
@@ -26,9 +26,11 @@ INTRODUCTION				*highlightedyank-introduction*
 *highlightedyank.vim* is a plugin to highlight the yanked region.
 This is a pretty trick to make your coding more comfortable.
 
-If you are using Vim 8.0.1934 or later, or neovim <https://neovim.io/>,
-there is no need for configuration, as the highlight event is automatically
-triggered by |TextYankPost| event.
+Note that if you are using neovim <https://neovim.io/>, you don't need this
+plugin. Check out |lua-highlight|.
+
+If you are using Vim 8.0.1934 or later, there is no need for configuration,
+as the highlight event is automatically triggered by |TextYankPost| event.
 
 Otherwise, it is required to define a keymapping to `<Plug>(highlightedyank)`.
 It would be good to check the existence of |TextYankPost| event.

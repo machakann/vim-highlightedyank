@@ -1,5 +1,5 @@
 *highlightedyank.txt*	ヤンクした場所をわかりやすくする。
-						Last change:28-Sep-2018.
+						Last change:25-Jan-2022.
 
 書いた人   : machakann <mckn{at}outlook.jp>
 ライセンス : NYSL ライセンス
@@ -25,9 +25,11 @@ INTRODUCTION				*highlightedyank-introduction*
 *highlightedyank.vim* はユーザーのヤンクした箇所をハイライトするだけのプラグイ
 ンです。あなたのコーディング作業にほんの少しの彩りを加えます。
 
-Vim 8.0.1934 かそれよりも新しいバージョン、あるいは
-neovim <https://neovim.io/> を使用している場合はインストールするだけで使えま
-す。ハイライト処理は |TextYankPost| イベントにより実行されます。
+もし、neovim <https://neovim.io/> を使用している場合はこのプラグインは必要あり
+ません。|lua-highlight| を参照してください。
+
+Vim 8.0.1934 かそれよりも新しいバージョンを使用している場合はインストールする
+だけで使えます。ハイライト処理は |TextYankPost| イベントにより実行されます。
 
 |TextYankPost| イベントが使えない場合も次の行を vimrc に書き加えると使えます。
 |TextYankPost| が存在するか確認するようにするとよいでしょう。
