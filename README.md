@@ -13,7 +13,9 @@ define a keymapping to `<Plug>(highlightedyank)`. Checking the existence of `Tex
 
 ```vim
 if !exists('##TextYankPost')
-  map y <Plug>(highlightedyank)
+  nmap y <Plug>(highlightedyank)
+  xmap y <Plug>(highlightedyank)
+  omap y <Plug>(highlightedyank)
 endif
 ```
 

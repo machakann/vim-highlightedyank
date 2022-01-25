@@ -36,7 +36,9 @@ Otherwise, it is required to define a keymapping to `<Plug>(highlightedyank)`.
 It would be good to check the existence of |TextYankPost| event.
 >
 	if !exists('##TextYankPost')
-	  map y <Plug>(highlightedyank)
+	  nmap y <Plug>(highlightedyank)
+	  xmap y <Plug>(highlightedyank)
+	  omap y <Plug>(highlightedyank)
 	endif
 <
 ==============================================================================

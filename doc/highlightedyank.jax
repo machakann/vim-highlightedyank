@@ -35,7 +35,9 @@ Vim 8.0.1934 かそれよりも新しいバージョンを使用している場�
 |TextYankPost| が存在するか確認するようにするとよいでしょう。
 >
 	if !exists('##TextYankPost')
-	  map y <Plug>(highlightedyank)
+	  nmap y <Plug>(highlightedyank)
+	  xmap y <Plug>(highlightedyank)
+	  omap y <Plug>(highlightedyank)
 	endif
 <
 
