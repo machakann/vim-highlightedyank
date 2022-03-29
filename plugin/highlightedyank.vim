@@ -13,6 +13,7 @@ let g:loaded_highlightedyank = 1
 " highlight group
 function! s:default_highlight() abort
   highlight default link HighlightedyankRegion IncSearch
+  highlight default link HighlightedyankRegionClipboard HighlightedyankRegion
 endfunction
 call s:default_highlight()
 augroup highlightedyank-event-ColorScheme

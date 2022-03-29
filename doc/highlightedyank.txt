@@ -91,6 +91,13 @@ group.
 	See |:highlight| help for more details. NOTE that the line should be
 	located after |:colorscheme| command execution in your vimrc.
 
+To highlight yanks to CLIPBOARD registers ('*', '+', |x11-selection|)
+differently re-define HighlightedyankRegionClipboard highlight group.
+
+	This highlight group is linked to HighlightedyankRegion by default.
+
+	highlight link HighlightedyankRegionClipboard HighlightedyankRegion
+
 ==============================================================================
 COMMANDS				*highlightedyank-commands*
 
