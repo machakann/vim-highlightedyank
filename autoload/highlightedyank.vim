@@ -30,6 +30,10 @@ function! highlightedyank#debounce() abort "{{{
   let operator = v:event.operator
   let regtype = v:event.regtype
   let regcontents = v:event.regcontents
+  if operator isnot# 'y' || regtype is# ''
+    return
+  endif
+
   let marks = [line("'["), line("']"), col("'["), col("']")]
   if s:timer isnot -1
     call timer_stop(s:timer)
@@ -39,7 +43,7 @@ function! highlightedyank#debounce() abort "{{{
   "       highlight procedure starts after the control is returned to the user.
   "       This makes complex-repeat faster because the highlight doesn't
   "       performed during a macro execution.
-  let s:timer = timer_start(1, {-> s:highlight(operator, regtype, regcontents, marks)})
+  let s:timer = timer_start(1, {-> s:highlight(regtype, regcontents, marks)})
 endfunction "}}}
 
 
@@ -64,11 +68,8 @@ function! highlightedyank#toggle() abort "{{{
 endfunction "}}}
 
 
-function! s:highlight(operator, regtype, regcontents, marks) abort "{{{
+function! s:highlight(regtype, regcontents, marks) abort "{{{
   let s:timer = -1
-  if a:operator isnot# 'y' || a:regtype is# ''
-    return
-  endif
   if a:marks !=#  [line("'["), line("']"), col("'["), col("']")]
     return
   endif
