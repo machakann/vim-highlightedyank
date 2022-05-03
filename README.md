@@ -44,11 +44,19 @@ When a new text is yanked or user starts editing, the old highlighting would be 
 
 If the highlight is not visible for some reason, you can redefine the `HighlightedyankRegion` highlight group like:
 
-```
+```vim
 highlight HighlightedyankRegion cterm=reverse gui=reverse
 ```
 
 Note that the line should be located after `:colorscheme` command execution in your vimrc.
+
+## Suppress highlight in visual mode
+
+The highlight may not be needed or even annoying in visual mode.
+
+```vim
+let g:highlightedyank_max_lines = 1000
+```
 
 ## Inspired by
 

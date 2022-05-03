@@ -1,5 +1,5 @@
 *highlightedyank.txt*	ヤンクした場所をわかりやすくする。
-						Last change:25-Jan-2022.
+						Last change:03-May-2022.
 
 書いた人   : machakann <mckn{at}outlook.jp>
 ライセンス : NYSL ライセンス
@@ -74,6 +74,16 @@ OPTIONS					*highlightedyank-options*
 <
 これらが明示的に指定されていない場合は、 10000 行を超える場合にハイライトをし
 ません。
+
+------------------------------------------------------------------------------
+
+					*g:highlightedyank_highlight_in_visual*
+					*b:highlightedyank_highlight_in_visual*
+ヴィジュアル選択範囲をヤンクした場合のハイライトはあまり必要でないかもしれませ
+ん。そんな場合にはこのオプションに偽値を設定してください。
+>
+	let g:highlightedyank_highlight_in_visual = 0
+<
 
 ==============================================================================
 HIGHLIGHT GROUPS			*highlightedyank-highlight-groups*
