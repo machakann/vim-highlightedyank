@@ -18,6 +18,15 @@ function! highlightedyank#debounce() abort "{{{
     return
   endif
 
+  if get(v:event, 'visual', 0)
+    let highlight_in_visual = (
+    \ get(b:, 'highlightedyank_highlight_in_visual', 1) &&
+    \ get(g:, 'highlightedyank_highlight_in_visual', 1))
+    if !highlight_in_visual
+      return
+    endif
+  endif
+
   let operator = v:event.operator
   let regtype = v:event.regtype
   let regcontents = v:event.regcontents

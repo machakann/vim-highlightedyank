@@ -1,5 +1,5 @@
 *highlightedyank.txt*	Make the yanked region apparent!
-						Last change:25-Jan-2022.
+						Last change:03-May-2022.
 
 Author  : machakann <mckn{at}outlook.jp>
 License : NYSL license
@@ -71,6 +71,16 @@ Adding the following line into your vimrc to give up over one thousand lines.
 	let g:highlightedyank_max_lines = 1000
 <
 The default value is 10000 lines.
+
+------------------------------------------------------------------------------
+
+					*g:highlightedyank_highlight_in_visual*
+					*b:highlightedyank_highlight_in_visual*
+The highlight may not be needed or even annoying in visual mode. In that case,
+set a falsy value to the option.
+>
+	let g:highlightedyank_highlight_in_visual = 0
+<
 
 ==============================================================================
 HIGHLIGHT GROUPS			*highlightedyank-highlight-groups*
