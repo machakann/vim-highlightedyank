@@ -55,7 +55,7 @@ Note that the line should be located after `:colorscheme` command execution in y
 The highlight may not be needed or even annoying in visual mode.
 
 ```vim
-let g:highlightedyank_max_lines = 1000
+let g:highlightedyank_highlight_in_visual = 0
 ```
 
 ## Inspired by
