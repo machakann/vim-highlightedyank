@@ -4,13 +4,14 @@
 let s:NULLPOS = [0, 0, 0, 0]
 let s:NULLREGION = [s:NULLPOS, s:NULLPOS, '']
 let s:MAXCOL = 2147483647
-let s:ON = 1
 let s:OFF = 0
+let s:ON = 1
 let s:HIGROUP = 'HighlightedyankRegion'
 
 
 
 let s:timer = -1
+let s:info = {}
 
 " Highlight the yanked region
 function! highlightedyank#debounce() abort "{{{
@@ -18,10 +19,11 @@ function! highlightedyank#debounce() abort "{{{
     return
   endif
 
-  if get(v:event, 'visual', 0)
+  if get(v:event, 'visual', v:false)
     let highlight_in_visual = (
-    \ get(b:, 'highlightedyank_highlight_in_visual', 1) &&
-    \ get(g:, 'highlightedyank_highlight_in_visual', 1))
+    \   get(b:, 'highlightedyank_highlight_in_visual', 1) &&
+    \   get(g:, 'highlightedyank_highlight_in_visual', 1)
+    \ )
     if !highlight_in_visual
       return
     endif
@@ -34,16 +36,19 @@ function! highlightedyank#debounce() abort "{{{
     return
   endif
 
-  let marks = [line("'["), line("']"), col("'["), col("']")]
-  if s:timer isnot -1
+  if s:timer != -1
     call timer_stop(s:timer)
   endif
+  let s:info = copy(v:event)
+  let s:info.changedtick = b:changedtick
+  " Old vim does not have visual key in v:event
+  let s:info.visual = get(v:event, 'visual', v:false)
 
   " NOTE: The timer callback is not called while vim is busy, thus the
   "       highlight procedure starts after the control is returned to the user.
   "       This makes complex-repeat faster because the highlight doesn't
   "       performed during a macro execution.
-  let s:timer = timer_start(1, {-> s:highlight(regtype, regcontents, marks)})
+  let s:timer = timer_start(1, 's:highlight')
 endfunction "}}}
 
 
@@ -68,14 +73,23 @@ function! highlightedyank#toggle() abort "{{{
 endfunction "}}}
 
 
-function! s:highlight(regtype, regcontents, marks) abort "{{{
+function! s:highlight(...) abort "{{{
   let s:timer = -1
-  if a:marks !=#  [line("'["), line("']"), col("'["), col("']")]
+  if s:info.changedtick != b:changedtick
     return
   endif
 
-  let [start, end, type] = s:get_region(a:regtype, a:regcontents)
-  if empty(type)
+  if s:info.visual
+    let start0 = getpos("'<")
+    let end0 = getpos("'>")
+  else
+    let start0 = getpos("'[")
+    let end0 = getpos("']")
+  endif
+  let [start, end, type] = s:get_region(
+  \   start0, end0, s:info.regtype, s:info.regcontents
+  \ )
+  if type is# ''
     return
   endif
 
@@ -93,24 +107,24 @@ function! s:highlight(regtype, regcontents, marks) abort "{{{
 endfunction "}}}
 
 
-function! s:get_region(regtype, regcontents) abort "{{{
+function! s:get_region(start, end, regtype, regcontents) abort "{{{
   if a:regtype is# 'v'
-    return s:get_region_char(a:regcontents)
+    return s:get_region_char(a:start, a:end, a:regcontents)
   elseif a:regtype is# 'V'
-    return s:get_region_line(a:regcontents)
+    return s:get_region_line(a:start, a:end, a:regcontents)
   elseif a:regtype[0] is# "\<C-v>"
     " NOTE: the width from v:event.regtype is not correct if 'clipboard' is
     "       unnamed or unnamedplus in windows
     " let width = str2nr(a:regtype[1:])
-    return s:get_region_block(a:regcontents)
+    return s:get_region_block(a:start, a:end, a:regcontents)
   endif
   return s:NULLREGION
 endfunction "}}}
 
 
-function! s:get_region_char(regcontents) abort "{{{
+function! s:get_region_char(start, _, regcontents) abort "{{{
   let len = len(a:regcontents)
-  let start = getpos("'[")
+  let start = copy(a:start)
   let end = copy(start)
   if len == 0
     return s:NULLREGION
@@ -132,9 +146,9 @@ function! s:get_region_char(regcontents) abort "{{{
 endfunction "}}}
 
 
-function! s:get_region_line(regcontents) abort "{{{
-  let start = getpos("'[")
-  let end = getpos("']")
+function! s:get_region_line(start, end, regcontents) abort "{{{
+  let start = copy(a:start)
+  let end = copy(a:end)
   if end[2] == s:MAXCOL
     let end[2] = col([end[1], '$'])
   endif
@@ -142,7 +156,7 @@ function! s:get_region_line(regcontents) abort "{{{
 endfunction "}}}
 
 
-function! s:get_region_block(regcontents) abort "{{{
+function! s:get_region_block(start, _, regcontents) abort "{{{
   let len = len(a:regcontents)
   if len == 0
     return s:NULLREGION
@@ -151,7 +165,7 @@ function! s:get_region_block(regcontents) abort "{{{
   let view = winsaveview()
   let curcol = col('.')
   let width = max(map(copy(a:regcontents), 'strdisplaywidth(v:val, curcol)'))
-  let start = getpos("'[")
+  let start = copy(a:start)
   call setpos('.', start)
   if len > 1
     execute printf('normal! %sj', len - 1)
