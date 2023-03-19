@@ -48,7 +48,7 @@ function! highlightedyank#debounce() abort "{{{
   "       highlight procedure starts after the control is returned to the user.
   "       This makes complex-repeat faster because the highlight doesn't
   "       performed during a macro execution.
-  let s:timer = timer_start(1, 's:highlight')
+  let s:timer = timer_start(1, {-> s:highlight()})
 endfunction "}}}
 
 
