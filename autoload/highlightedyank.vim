@@ -7,8 +7,12 @@ let s:MAXCOL = 2147483647
 let s:OFF = 0
 let s:ON = 1
 let s:HIGROUP = 'HighlightedyankRegion'
+let s:HIPROP = 'HighlightedyankProp'
+let s:HAS_TEXTPROP = has('textprop')
 
-
+if s:HAS_TEXTPROP && empty(prop_type_get(s:HIPROP))
+  call prop_type_add(s:HIPROP, { 'highlight': s:HIGROUP, 'combine': v:true, 'priority': 100, })
+endif
 
 let s:timer = -1
 let s:info = {}
@@ -103,7 +107,21 @@ function! s:highlight(...) abort "{{{
     return
   endif
 
-  call highlightedyank#highlight#add(s:HIGROUP, start, end, type, hi_duration)
+  if s:HAS_TEXTPROP
+    let start_line = start[1]
+    let start_col = start[2]
+    let end_line = end[1]
+    let shift = start_line == end_line ? start_col - 1 : 0
+    let length = len(s:info.regcontents[-1]) + 1 + shift
+    let bufnr = bufnr('%')
+    call prop_add(start_line, start_col, { 'end_lnum': end_line, 'end_col': length, 'type': s:HIPROP })
+
+    let prop_remove_opts = {'bufnr': bufnr, 'type': s:HIPROP, 'all': v:true}
+    call timer_start(hi_duration, { -> prop_remove(prop_remove_opts, start_line, end_line) })
+  else
+    call highlightedyank#highlight#add(s:HIGROUP, start, end, type, hi_duration)
+  endif
+
 endfunction "}}}
 
 
