@@ -21,7 +21,7 @@ endif
 
 ### If you are using Neovim,
 
-you don't need this plugin. Check out [here](https://neovim.io/doc/user/lua.html#lua-highlight).
+you don't need this plugin. Check out [here](https://neovim.io/doc/user/lua.html#_vim.hl).
 
 
 ## Optimizing highlight duration
