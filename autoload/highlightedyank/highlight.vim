@@ -224,10 +224,13 @@ function! s:highlight.delete() dict abort "{{{
   if self.status is s:OFF
     return 0
   endif
-  if s:is_in_cmdline_window() && !self.is_in_highlight_window()
-    " NOTE: cannot move out from commandline-window
-    call self._quench_by_CmdWinLeave()
-    return 0
+  if !self.is_in_highlight_window()
+    if s:is_in_cmdline_window() || s:is_in_popup_terminal_window()
+      " NOTE: cannot move out from commandline-window
+      " NOTE: cannot move out from popup terminal window
+      call self._quench_by_event('WinEnter')
+      return 0
+    endif
   endif
 
   call self._quench_now()
@@ -271,9 +274,9 @@ function! s:highlight._quench_now() abort "{{{
 endfunction "}}}
 
 
-function! s:highlight._quench_by_CmdWinLeave() abort "{{{
+function! s:highlight._quench_by_event(event) abort "{{{
   let quenchtask = s:Schedule.TaskChain()
-  call quenchtask.hook(['CmdWinLeave'])
+  call quenchtask.hook([a:event])
   call quenchtask.hook([1]).call(self.delete, [], self)
   call quenchtask.waitfor()
 endfunction "}}}
@@ -282,6 +285,19 @@ endfunction "}}}
 function! s:is_in_cmdline_window() abort "{{{
   return getcmdwintype() isnot# ''
 endfunction "}}}
+
+
+" function! s:is_in_popup_terminal_window() abort   {{{
+if exists('*popup_list')
+  function! s:is_in_popup_terminal_window() abort
+    return &buftype is# 'terminal' && count(popup_list(), win_getid())
+  endfunction
+else
+  function! s:is_in_popup_terminal_window() abort
+    return 0
+  endfunction
+endif
+" }}}
 
 
 " Quench if buffer is switched in the same window
